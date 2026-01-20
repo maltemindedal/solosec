@@ -30,13 +30,13 @@ If you already have Docker, you can run SoloSec without installing Python/Trivy/
 Build the image:
 
 ```bash
-docker build -t myname/solosec .
+docker build -t mindedal/solosec .
 ```
 
 Run it against the current folder (report is written to your project as `security_audit.json`):
 
 ```bash
-docker run --rm -v "$(pwd):/src" myname/solosec
+docker run --rm -v "$(pwd):/src" mindedal/solosec
 ```
 
 Optional DAST (OWASP ZAP) requires Docker access from inside the container (mount the Docker socket):
@@ -45,7 +45,7 @@ Optional DAST (OWASP ZAP) requires Docker access from inside the container (moun
 docker run --rm \
     -v "$(pwd):/src" \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    myname/solosec -u "http://host.docker.internal:3000"
+    mindedal/solosec -u "http://host.docker.internal:3000"
 ```
 
 **Notes:**
