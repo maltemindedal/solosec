@@ -60,7 +60,9 @@ def _parse_scalar(raw: str) -> Any:
         return ""
 
     # Quotes
-    if (s.startswith('"') and s.endswith('"')) or (s.startswith("'") and s.endswith("'")):
+    if (s.startswith('"') and s.endswith('"')) or (
+        s.startswith("'") and s.endswith("'")
+    ):
         return s[1:-1]
 
     low = s.lower()
@@ -192,7 +194,9 @@ def _bash_escape(value: str) -> str:
 def main(argv: Optional[List[str]] = None) -> int:
     p = argparse.ArgumentParser(prog="solosec-config")
     p.add_argument("project_root", help="Project root directory")
-    p.add_argument("--cli-url", default="", help="URL passed via CLI (overrides config)")
+    p.add_argument(
+        "--cli-url", default="", help="URL passed via CLI (overrides config)"
+    )
     p.add_argument("--config", default=None, help="Path to .solosec.yaml")
     p.add_argument("--format", choices=["json", "bash"], default="json")
     args = p.parse_args(argv)
