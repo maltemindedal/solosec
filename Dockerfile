@@ -56,12 +56,12 @@ RUN set -eu; \
 
 # Copy SoloSec scripts into the image
 WORKDIR /opt/solosec
-COPY pyproject.toml uv.lock README.md ./
+COPY pyproject.toml uv.lock README.md LICENSE ./
 COPY src/ ./src/
 COPY bin/ ./bin/
 
 RUN uv sync --frozen --no-dev \
- && chmod +x ./bin/solosec ./bin/solosec.sh || true \
+ && chmod +x ./bin/solosec ./bin/solosec.sh \
  && ln -sf /opt/solosec/.venv/bin/solosec /usr/local/bin/solosec
 
 ENV PATH="/opt/solosec/.venv/bin:${PATH}"

@@ -40,5 +40,5 @@ runs:
       with:
         name: ${{ inputs.artifact-name }}
         path: |
-          security_audit.json
-          .security_reports/**
+          ${{ github.workspace }}/security_audit.json
+          ${{ github.workspace }}/.security_reports/**
