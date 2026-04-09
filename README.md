@@ -114,7 +114,7 @@ SoloSec is designed to have “teeth” in CI:
 - The typed Python CLI exits **non-zero** if it finds any **HIGH** or **CRITICAL** issues.
 - The wrapper scripts simply forward to the packaged CLI.
 
-This repo includes a ready-to-use workflow at `.github/workflows/solosec.yml` that:
+This repo includes a ready-to-use workflow at `.github/workflows/ci.yml` that:
 
 1. Builds the included `Dockerfile` (so Trivy/Semgrep/Gitleaks are available)
 2. Runs `solosec` against your repository

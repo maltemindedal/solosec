@@ -36,7 +36,7 @@ include = [
   "install.ps1",
   "install.sh",
   "action.yml",
-  ".github/workflows/solosec.yml",
+  ".github/workflows/ci.yml",
 ]
 
 [tool.pytest.ini_options]

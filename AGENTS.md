@@ -24,5 +24,5 @@
 - Aggregation tests use static fixtures in `tests/fixtures/`; CLI tests monkeypatch tool runners instead of invoking real scanners.
 
 ## CI / Action
-- `.github/workflows/solosec.yml` has two jobs: `quality` first, then `solosec`.
+- `.github/workflows/ci.yml` has two jobs: `quality` first, then `scan`.
 - The composite action in `action.yml` builds this repo's `Dockerfile`, runs the container against `${GITHUB_WORKSPACE}`, and mounts `/var/run/docker.sock` so optional ZAP scans can launch.
