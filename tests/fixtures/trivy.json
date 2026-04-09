@@ -1,0 +1,16 @@
+{
+  "Results": [
+    {
+      "Target": "requirements.txt",
+      "Vulnerabilities": [
+        {
+          "PkgName": "django",
+          "InstalledVersion": "4.2.0",
+          "Title": "SQL injection issue",
+          "Severity": "HIGH",
+          "FixedVersion": "4.2.11"
+        }
+      ]
+    }
+  ]
+}

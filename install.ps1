@@ -1,21 +1,23 @@
 # install.ps1 - Setup script
 Write-Host "Installing SoloSec..." -ForegroundColor Cyan
 
-# 1. Check Prerequisites
-$missing = @()
-if (!(Get-Command python -ErrorAction SilentlyContinue)) { $missing += "Python" }
-if (!(Get-Command docker -ErrorAction SilentlyContinue)) { $missing += "Docker" }
+$UvBinPath = Join-Path $HOME ".local\bin"
 
-if ($missing.Count -gt 0) {
-    Write-Error "Missing requirements: $($missing -join ', '). Please install them first."
+if (!(Get-Command docker -ErrorAction SilentlyContinue)) {
+    Write-Error "Missing requirement: Docker. Please install it first."
     exit 1
 }
 
-# 2. Check/Install Tools (Using Scoop if available, or Pip/Choco)
+if (!(Get-Command uv -ErrorAction SilentlyContinue)) {
+    Write-Host "   -> Installing uv..."
+    & powershell -ExecutionPolicy Bypass -c "irm https://astral.sh/uv/install.ps1 | iex"
+}
+
+$env:Path = "$UvBinPath;$env:Path"
+
 Write-Host "[*] Checking dependency tools..."
 if (!(Get-Command trivy -ErrorAction SilentlyContinue)) {
     Write-Host "   -> Installing Trivy..."
-    # Attempt Scoop first (cleanest), fall back to Choco
     if (Get-Command scoop -ErrorAction SilentlyContinue) {
         scoop install trivy
     } elseif (Get-Command choco -ErrorAction SilentlyContinue) {
@@ -23,13 +25,6 @@ if (!(Get-Command trivy -ErrorAction SilentlyContinue)) {
     } else {
         Write-Warning "Neither Scoop nor Chocolatey found. Please install Trivy manually: https://trivy.dev"
     }
-}
-
-if (!(Get-Command semgrep -ErrorAction SilentlyContinue)) {
-    Write-Host "   -> Installing Semgrep (via Pipx)..."
-    python -m pip install pipx
-    python -m pipx ensurepath
-    pipx install semgrep
 }
 
 if (!(Get-Command gitleaks -ErrorAction SilentlyContinue)) {
@@ -43,14 +38,15 @@ if (!(Get-Command gitleaks -ErrorAction SilentlyContinue)) {
     }
 }
 
-# 3. Add to PATH (Permanently)
-$BinPath = "$PSScriptRoot\bin"
-$CurrentPath = [Environment]::GetEnvironmentVariable("Path", "User")
+Write-Host "[*] Installing SoloSec with uv..."
+uv python install 3.11
+uv tool install --force --python 3.11 -e $PSScriptRoot
 
-if ($CurrentPath -notlike "*$BinPath*") {
-    Write-Host "[*] Adding '$BinPath' to your User PATH..."
-    [Environment]::SetEnvironmentVariable("Path", "$CurrentPath;$BinPath", "User")
+$CurrentPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if ($CurrentPath -notlike "*$UvBinPath*") {
+    Write-Host "[*] Adding '$UvBinPath' to your User PATH..."
+    [Environment]::SetEnvironmentVariable("Path", "$CurrentPath;$UvBinPath", "User")
     Write-Host "Added. Restart your terminal to use the command 'solosec'." -ForegroundColor Green
 } else {
-    Write-Host "'solosec' is already in your PATH." -ForegroundColor Green
+    Write-Host "uv tool bin directory is already on your PATH." -ForegroundColor Green
 }

@@ -1,0 +1,14 @@
+{
+  "site": [
+    {
+      "alerts": [
+        {
+          "riskcode": "2",
+          "alert": "X-Frame-Options Header Not Set",
+          "solution": "Set the X-Frame-Options header.",
+          "instances": [{ "uri": "http://localhost:3000" }]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+[
+  {
+    "RuleID": "generic-api-key",
+    "File": ".env",
+    "StartLine": 3
+  }
+]

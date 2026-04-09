@@ -13,8 +13,9 @@ ARG GITLEAKS_VERSION=
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONUTF8=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PIP_NO_CACHE_DIR=1
+  UV_LINK_MODE=copy \
+  UV_COMPILE_BYTECODE=1 \
+  UV_PYTHON_DOWNLOADS=never
 
 # Base utilities + docker CLI (for optional ZAP runs)
 RUN apt-get update \
@@ -32,9 +33,9 @@ RUN apt-get update \
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
   | sh -s -- -b /usr/local/bin ${TRIVY_VERSION}
 
-# Semgrep + pretty terminal output
-RUN python -m pip install --upgrade pip \
- && python -m pip install semgrep rich
+# uv + SoloSec runtime dependencies
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
+ && ln -sf /root/.local/bin/uv /usr/local/bin/uv
 
 # Gitleaks
 RUN set -eu; \
@@ -55,10 +56,15 @@ RUN set -eu; \
 
 # Copy SoloSec scripts into the image
 WORKDIR /opt/solosec
+COPY pyproject.toml uv.lock README.md ./
+COPY src/ ./src/
 COPY bin/ ./bin/
 
-RUN chmod +x ./bin/solosec ./bin/solosec.sh || true \
- && ln -sf /opt/solosec/bin/solosec /usr/local/bin/solosec
+RUN uv sync --frozen --no-dev \
+ && chmod +x ./bin/solosec ./bin/solosec.sh || true \
+ && ln -sf /opt/solosec/.venv/bin/solosec /usr/local/bin/solosec
+
+ENV PATH="/opt/solosec/.venv/bin:${PATH}"
 
 # The scanned project is expected to be bind-mounted at /src
 WORKDIR /src

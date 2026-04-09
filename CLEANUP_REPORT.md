@@ -1,0 +1,22 @@
+# Cleanup Report
+
+- Removed unused `SEVERITIES` constant from `src/solosec/_models.py`.
+- Removed orphan `tests/conftest.py` because it was empty and provided no shared fixtures.
+- Refactored `src/solosec/config.py::parse_minimal_yaml` into smaller helpers:
+  - `_split_key_value`
+  - `_start_context`
+  - `_parse_top_level_line`
+  - `_append_exclude_dir`
+  - `_assign_tool_override`
+  - `_parse_nested_line`
+- Refactored `src/solosec/aggregate.py` into smaller helpers:
+  - `_summary_rows`
+  - `_status_summary`
+  - `_trivy_title`
+  - `_build_trivy_finding`
+  - `_extract_zap_target_url`
+  - `_build_zap_finding`
+- Scan findings:
+  - No deprecated function calls found.
+  - No unreachable code paths found.
+  - No additional unused imports found.

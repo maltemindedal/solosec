@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "solosec"
+version = "0.1.0"
+description = "Security automation for development teams."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+authors = [{ name = "maltemindedal" }]
+dependencies = ["rich>=13.9,<15", "semgrep>=1.128,<2"]
+
+[project.scripts]
+solosec = "solosec.cli:main"
+solosec-config = "solosec.config:main"
+solosec-aggregate = "solosec.aggregate:main"
+
+[dependency-groups]
+dev = ["pyright>=1.1.400,<2", "pytest>=8.3,<9", "pytest-cov>=6.1,<7", "ruff>=0.11.6,<0.12"]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/solosec"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/solosec",
+  "bin",
+  "README.md",
+  "LICENSE",
+  "Dockerfile",
+  "install.ps1",
+  "install.sh",
+  "action.yml",
+  ".github/workflows/solosec.yml",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests", "bin"]
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "UP", "W"]
+
+[tool.ruff.format]
+docstring-code-format = true
+quote-style = "double"
+indent-style = "space"
+
+[tool.pyright]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+include = ["src", "tests", "bin"]
+extraPaths = ["src"]
+exclude = [".venv", "build", "dist", "**/node_modules", "**/__pycache__", "**/.*"]
+reportMissingTypeStubs = false
+reportUnnecessaryTypeIgnoreComment = true

@@ -15,12 +15,38 @@ Automated DevSecOps wrapper for Windows, macOS, and Linux. Runs industry-standar
 
 ## Installation
 
+SoloSec is now managed with `uv`, so local development, linting, formatting, and type-checking all run through the same project environment.
+
 ### PowerShell
 
 ```powershell
 git clone https://github.com/mindedal/solosec.git
 cd solosec
 .\install.ps1
+```
+
+### macOS / Linux
+
+```bash
+git clone https://github.com/mindedal/solosec.git
+cd solosec
+./install.sh
+```
+
+### Develop with `uv`
+
+```bash
+uv sync --python 3.11
+uv run solosec --help
+```
+
+Quality commands:
+
+```bash
+uv run ruff format .
+uv run ruff check .
+uv run pyright
+uv run pytest
 ```
 
 ### Docker (containerized execution)
@@ -85,8 +111,8 @@ GitHub Actions (and most CI systems) decide whether a job is **Pass (green)** or
 
 SoloSec is designed to have “teeth” in CI:
 
-- The aggregator exits **non-zero** if it finds any **HIGH** or **CRITICAL** issues.
-- The `solosec` runner scripts propagate that exit code to the shell.
+- The typed Python CLI exits **non-zero** if it finds any **HIGH** or **CRITICAL** issues.
+- The wrapper scripts simply forward to the packaged CLI.
 
 This repo includes a ready-to-use workflow at `.github/workflows/solosec.yml` that:
 
@@ -137,6 +163,14 @@ tools:
 - `target_url` enables OWASP ZAP DAST (unless `tools.zap: false`).
 - `exclude_dirs` is applied to Trivy (`--skip-dirs`), Semgrep (`--exclude`), and Gitleaks (`--exclude-path`).
 - CLI flags override config (e.g., `solosec -Url ...` wins over `target_url`).
+
+---
+
+## Project Layout
+
+- `src/solosec/` — typed Python package and CLI implementation
+- `bin/` — compatibility wrappers for source checkouts
+- `tests/` — pytest coverage for config parsing, aggregation, and CLI behavior
 
 ---
 
