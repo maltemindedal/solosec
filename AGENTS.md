@@ -1,33 +1,70 @@
 # AGENTS.md
 
-## Dev Environment
+Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
 
-- Use `uv` with Python 3.11. Local setup and CI both use `uv sync`; CI specifically runs `uv sync --frozen`.
-- Mirror CI verification order when checking changes: `uv run ruff format --check .`, `uv run ruff check .`, `uv run pyright`, `uv run pytest`.
-- Ruff targets `src`, `tests`, and `bin`; Pyright is `strict` and also checks `src`, `tests`, and `bin`.
+**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
-## Entry Points
+## 1. Think Before Coding
 
-- Main package code lives in `src/solosec/`.
-- CLI entrypoint is `solosec.cli:main`; `python -m solosec` goes through `src/solosec/__main__.py`.
-- Helper CLIs also exist: `solosec-config` resolves `.solosec.yaml`, and `solosec-aggregate` aggregates JSON reports from `.security_reports/`.
-- `bin/solosec.sh` and `bin/solosec.ps1` are source-checkout wrappers; when `uv` is available they run `uv run --directory <repo> solosec`.
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
 
-## Runtime Behavior
+Before implementing:
 
-- `solosec` writes tool outputs to `.security_reports/` and the combined report to `security_audit.json` at the scanned project root.
-- Running the CLI can append `.security_reports/` to the target repo's `.gitignore` if that entry is missing.
-- Aggregation fails the process on `HIGH` or `CRITICAL` findings only.
-- Trivy and Gitleaks are external executables expected on `PATH`; Semgrep is a Python dependency from this repo's environment; ZAP runs via `docker`.
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
 
-## Config And Test Gotchas
+## 2. Simplicity First
 
-- `.solosec.yaml` is parsed by a small custom parser in `src/solosec/config.py`, not a full YAML library. Keep configs simple: top-level scalars, `exclude_dirs`, and `tools` only.
-- CLI `--url` overrides config `target_url`/`url`; if `tools.zap` is false, the resolved URL is cleared entirely.
-- For focused verification, run individual tests with pytest node paths, e.g. `uv run pytest tests/test_config.py -q` or `uv run pytest tests/test_cli.py -q`.
-- Aggregation tests use static fixtures in `tests/fixtures/`; CLI tests monkeypatch tool runners instead of invoking real scanners.
+**Minimum code that solves the problem. Nothing speculative.**
 
-## CI / Action
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
 
-- `.github/workflows/ci.yml` has two jobs: `quality` first, then `scan`.
-- The composite action in `action.yml` builds this repo's `Dockerfile`, runs the container against `${GITHUB_WORKSPACE}`, and mounts `/var/run/docker.sock` so optional ZAP scans can launch.
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+## 3. Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+---
+
+**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
