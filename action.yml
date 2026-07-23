@@ -1,5 +1,5 @@
-name: Gavel Security Scan
-description: Run Gavel (Trivy + Semgrep + Gitleaks + optional ZAP).
+name: Warden Security Scan
+description: Run Warden (Trivy + Semgrep + Gitleaks + optional ZAP).
 
 inputs:
   url:
@@ -10,16 +10,16 @@ inputs:
     default: "true"
   artifact-name:
     description: "Artifact name"
-    default: "gavel-report"
+    default: "warden-report"
 
 runs:
   using: composite
   steps:
-    - name: Build Gavel
+    - name: Build Warden
       shell: bash
-      run: docker build -t gavel:action "${GITHUB_ACTION_PATH}"
+      run: docker build -t warden:action "${GITHUB_ACTION_PATH}"
 
-    - name: Run Gavel
+    - name: Run Warden
       shell: bash
       env:
         INPUT_URL: ${{ inputs.url }}
@@ -41,7 +41,7 @@ runs:
           -v "${GITHUB_WORKSPACE}:/src" \
           -v /var/run/docker.sock:/var/run/docker.sock \
           -e GITHUB_WORKSPACE="${GITHUB_WORKSPACE}" \
-          gavel:action "${ARGS[@]}"
+          warden:action "${ARGS[@]}"
 
     - name: Upload reports
       if: ${{ always() && inputs.upload-artifact == 'true' }}

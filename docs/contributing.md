@@ -2,7 +2,7 @@
 
 ## Development environment
 
-Gavel uses [uv](https://docs.astral.sh/uv/) for dependency and environment
+Warden uses [uv](https://docs.astral.sh/uv/) for dependency and environment
 management. From a clone:
 
 ```bash
@@ -20,7 +20,7 @@ uv sync --frozen
 Run the CLI from the checkout without installing it:
 
 ```bash
-uv run gavel --help
+uv run warden --help
 ```
 
 ## The quality gate
@@ -71,7 +71,7 @@ for a live scan — it keeps the suite fast and deterministic.
 `pytest-cov` is available for coverage runs:
 
 ```bash
-uv run pytest --cov=gavel
+uv run pytest --cov=warden
 ```
 
 ## Dependencies
@@ -91,7 +91,7 @@ Two constraints in `[tool.uv]` are deliberate and will affect you:
   cannot be pulled in silently. If a lock fails on a very recent version, this is
   why; wait for it to age out rather than removing the setting.
 - **`override-dependencies = ["mcp>=1.28.1"]`** — Semgrep pins `mcp==1.23.3`,
-  which carries known advisories. Gavel uses Semgrep's CLI scanner and never
+  which carries known advisories. Warden uses Semgrep's CLI scanner and never
   its MCP server, so the pin is overridden to the patched release.
 
 Commit `uv.lock` alongside any dependency change.
@@ -102,11 +102,11 @@ Commit `uv.lock` alongside any dependency change.
 manual dispatch:
 
 - **`quality`** — the four checks above on Ubuntu with Python 3.11.
-- **`scan`** — runs Gavel against this repository, gated on `quality` passing.
+- **`scan`** — runs Warden against this repository, gated on `quality` passing.
 
 The `scan` job means the project scans itself: a change that introduces a High
 or Critical finding — including in a workflow file or the `Dockerfile` — will
-fail CI. See [Using Gavel in CI](guides/ci-github-actions.md).
+fail CI. See [Using Warden in CI](guides/ci-github-actions.md).
 
 Actions are pinned to commit SHAs with the version in a trailing comment. When
 updating one, update both.

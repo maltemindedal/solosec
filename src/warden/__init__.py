@@ -1,4 +1,4 @@
-"""Gavel package."""
+"""Warden package."""
 
 from .cli import main
 

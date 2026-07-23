@@ -1,7 +1,7 @@
-# Gavel documentation
+# Warden documentation
 
 Every document in this directory, grouped by purpose. Start with
-[Getting started](getting-started.md) if you have never run Gavel.
+[Getting started](getting-started.md) if you have never run Warden.
 
 ## Tutorial — learning
 
@@ -9,17 +9,17 @@ For newcomers working through a first success end to end.
 
 | Document | Covers |
 | --- | --- |
-| [Getting started](getting-started.md) | Install Gavel and scan your first project. Assumes no prior knowledge. |
+| [Getting started](getting-started.md) | Install Warden and scan your first project. Assumes no prior knowledge. |
 
 ## How-to guides — tasks
 
-Goal-oriented recipes. Each assumes you already have Gavel working.
+Goal-oriented recipes. Each assumes you already have Warden working.
 
 | Document | Covers |
 | --- | --- |
-| [Configuring scans](guides/configuring-scans.md) | Write a `.gavel.yaml`: exclude directories, disable tools, set a DAST target. |
+| [Configuring scans](guides/configuring-scans.md) | Write a `.warden.yaml`: exclude directories, disable tools, set a DAST target. |
 | [Running with Docker](guides/running-with-docker.md) | Run the containerised scanner without installing the tools locally, including the DAST setup. |
-| [Using Gavel in CI](guides/ci-github-actions.md) | Wire the scan into GitHub Actions, in this repo or another one. |
+| [Using Warden in CI](guides/ci-github-actions.md) | Wire the scan into GitHub Actions, in this repo or another one. |
 | [Troubleshooting](guides/troubleshooting.md) | Diagnose skipped tools, permission errors, and unexpected exit codes. |
 
 ## Reference — lookup
@@ -28,8 +28,8 @@ Exhaustive and factual. For readers who already know what they want.
 
 | Document | Covers |
 | --- | --- |
-| [CLI](reference/cli.md) | Every command, flag, and exit code across `gavel`, `gavel-config`, and `gavel-aggregate`. |
-| [Configuration](reference/configuration.md) | Every `.gavel.yaml` key and environment variable, with types, defaults, and precedence. |
+| [CLI](reference/cli.md) | Every command, flag, and exit code across `warden`, `warden-config`, and `warden-aggregate`. |
+| [Configuration](reference/configuration.md) | Every `.warden.yaml` key and environment variable, with types, defaults, and precedence. |
 | [Report format](reference/report-format.md) | The `security_audit.json` schema and how each tool's severities are normalised. |
 
 ## Explanation — understanding

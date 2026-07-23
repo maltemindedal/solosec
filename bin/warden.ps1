@@ -14,19 +14,19 @@ if ($env:PYTHONPATH) {
 }
 
 if ((Get-Command uv -ErrorAction SilentlyContinue) -and (Test-Path (Join-Path $ProjectRoot "pyproject.toml"))) {
-    & uv run --directory $ProjectRoot gavel @RemainingArgs
+    & uv run --directory $ProjectRoot warden @RemainingArgs
     exit $LASTEXITCODE
 }
 
 $Python = Get-Command python -ErrorAction SilentlyContinue
 if ($Python) {
-    & $Python.Source -m gavel @RemainingArgs
+    & $Python.Source -m warden @RemainingArgs
     exit $LASTEXITCODE
 }
 
 $Python3 = Get-Command python3 -ErrorAction SilentlyContinue
 if ($Python3) {
-    & $Python3.Source -m gavel @RemainingArgs
+    & $Python3.Source -m warden @RemainingArgs
     exit $LASTEXITCODE
 }
 

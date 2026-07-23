@@ -2,7 +2,7 @@
 
 Symptoms and their causes, in rough order of how often they come up.
 
-## The `gavel` command is not found
+## The `warden` command is not found
 
 The installer puts the executable in `~/.local/bin` and appends that directory
 to your shell profile. A shell started before the install will not have it.
@@ -25,7 +25,7 @@ existing terminals do not pick up. Open a new PowerShell window.
 Without installing, you can always run from a checkout:
 
 ```bash
-uv run gavel --help
+uv run warden --help
 ```
 
 ## A tool was skipped or warned, but the scan still passed
@@ -37,7 +37,7 @@ Output like this means a scanner did not run cleanly:
    -> Warning: trivy was not found on PATH.
 ```
 
-**This does not fail the build.** Gavel reports the warning and continues,
+**This does not fail the build.** Warden reports the warning and continues,
 then bases its verdict on whatever reports exist. A scan can print `PASS` while a
 scanner never ran.
 
@@ -66,12 +66,12 @@ The message is always the same regardless of cause:
 Check the resolved configuration:
 
 ```bash
-gavel-config . --cli-url "http://localhost:3000"
+warden-config . --cli-url "http://localhost:3000"
 ```
 
 If `"url"` is empty while `"zap"` is `false`, that is the cause: **`tools.zap:
 false` blanks the URL after the CLI flag is applied**, so an explicit `--url`
-cannot override it. Remove `zap: false` from `.gavel.yaml`.
+cannot override it. Remove `zap: false` from `.warden.yaml`.
 
 ## `PermissionError` when running the Docker image
 
@@ -83,7 +83,7 @@ The image runs as an unprivileged user that cannot write to your bind mount. Add
 the `--user` flag:
 
 ```bash
-docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/src" gavel:local
+docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/src" warden:local
 ```
 
 See [Why the `--user` flag is required](running-with-docker.md#why-the---user-flag-is-required).
@@ -100,19 +100,19 @@ The unprivileged container user is not in the socket's group. Add it:
 --group-add "$(stat -c '%g' /var/run/docker.sock)"
 ```
 
-## Changes to `.gavel.yaml` have no effect
+## Changes to `.warden.yaml` have no effect
 
 A config file that cannot be parsed is silently discarded and defaults are used
-— no error is printed. Check what Gavel actually resolved:
+— no error is printed. Check what Warden actually resolved:
 
 ```bash
-gavel-config .
+warden-config .
 ```
 
 If the output shows defaults, the file was not read or not understood. Common
 causes:
 
-- The file is not at `<project-root>/.gavel.yaml`. Pass `--config` to point
+- The file is not at `<project-root>/.warden.yaml`. Pass `--config` to point
   elsewhere.
 - The YAML uses features the parser does not support. It handles top-level
   scalars, a `-` list under `exclude_dirs`, and a one-level mapping under
@@ -124,7 +124,7 @@ causes:
 
 ## Findings from `node_modules`, `.venv`, or `vendor`
 
-Gavel scans everything under the project root by default, including installed
+Warden scans everything under the project root by default, including installed
 dependencies. A checkout with dependencies installed can produce a large number
 of findings that are not about your code — Gitleaks in particular flags test
 fixtures and sample keys inside third-party packages.

@@ -378,7 +378,7 @@ def generate_report(
 
 def _parse_args(argv: list[str] | None = None) -> AggregateCliOptions:
     parser = argparse.ArgumentParser(
-        prog="gavel-aggregate",
+        prog="warden-aggregate",
         description=(
             "Aggregate security scanner reports (Trivy, Semgrep, Gitleaks, ZAP) "
             "into a single JSON file."

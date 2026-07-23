@@ -1,6 +1,6 @@
 # Architecture overview
 
-Gavel is an orchestrator. It runs no analysis of its own — its job is to
+Warden is an orchestrator. It runs no analysis of its own — its job is to
 invoke four third-party scanners consistently, reconcile their incompatible
 output formats into one model, and reduce the result to a single exit code.
 
@@ -8,8 +8,8 @@ output formats into one model, and reduce the result to a single exit code.
 
 ```mermaid
 flowchart LR
-    user([Developer or CI]) --> cli[gavel CLI]
-    cli --> cfg[".gavel.yaml"]
+    user([Developer or CI]) --> cli[warden CLI]
+    cli --> cfg[".warden.yaml"]
     cli -->|subprocess| trivy[Trivy]
     cli -->|subprocess| semgrep[Semgrep]
     cli -->|subprocess| gitleaks[Gitleaks]
@@ -29,14 +29,14 @@ running application rather than source files.
 
 ## Components
 
-All under `src/gavel/`.
+All under `src/warden/`.
 
 | Module | Responsibility |
 | --- | --- |
 | `cli.py` | Entry point. Parses arguments, sequences the stages, prints progress, returns the exit code. |
-| `config.py` | Parses `.gavel.yaml` and resolves it against CLI arguments into a `ResolvedConfig`. Also the `gavel-config` entry point. |
+| `config.py` | Parses `.warden.yaml` and resolves it against CLI arguments into a `ResolvedConfig`. Also the `warden-config` entry point. |
 | `tooling.py` | Builds and runs each scanner's command line. The only module that touches subprocesses. |
-| `aggregate.py` | Parses each tool's JSON, normalises findings, writes the report, prints the summary. Also the `gavel-aggregate` entry point. |
+| `aggregate.py` | Parses each tool's JSON, normalises findings, writes the report, prints the summary. Also the `warden-aggregate` entry point. |
 | `_models.py` | Shared dataclasses and typed dicts. No logic. |
 
 The dependency direction is one-way: `cli` depends on the other three, and
@@ -45,7 +45,7 @@ leaf.
 
 ## Data flow through a scan
 
-1. **Resolve configuration.** `config.resolve_config` reads `.gavel.yaml` if
+1. **Resolve configuration.** `config.resolve_config` reads `.warden.yaml` if
    present and merges it with CLI arguments. A missing or unparsable file yields
    defaults.
 2. **Prepare the report directory.** `.security_reports/` is created in the
@@ -60,7 +60,7 @@ leaf.
    `security_audit.json`, summarised as a table, and reduced to an exit code.
 
 The stages communicate through files on disk, not in memory. That is why
-`gavel-aggregate` can run standalone against a directory of reports that some
+`warden-aggregate` can run standalone against a directory of reports that some
 other process produced.
 
 ## Design notes
@@ -87,11 +87,11 @@ notion of a serious finding also fails a build. See
 
 ### The config parser is deliberately minimal
 
-`.gavel.yaml` is read by about 110 lines of hand-written parsing rather than
+`.warden.yaml` is read by about 110 lines of hand-written parsing rather than
 a YAML library, which keeps the runtime dependency list to `rich` and `semgrep`.
-The trade-off is real: only the exact shapes Gavel needs are supported, and
+The trade-off is real: only the exact shapes Warden needs are supported, and
 unsupported syntax is ignored rather than rejected, so a malformed config
-degrades to defaults silently. `gavel-config` exists largely to make that
+degrades to defaults silently. `warden-config` exists largely to make that
 failure mode visible.
 
 ### ZAP runs as a sibling container
@@ -102,9 +102,9 @@ The other three tools are executables on `PATH`. ZAP is invoked as
 First, Docker is a hard prerequisite of both installers even though only the
 DAST stage uses it.
 
-Second, when Gavel is *itself* containerised, the report path it wants to
+Second, when Warden is *itself* containerised, the report path it wants to
 mount is a path inside its own container, which the host's Docker daemon cannot
-resolve. The `GAVEL_HOST_REPORT_DIR`, `GAVEL_HOST_WORKSPACE`, and
+resolve. The `WARDEN_HOST_REPORT_DIR`, `WARDEN_HOST_WORKSPACE`, and
 `GITHUB_WORKSPACE` environment variables exist to supply the host path instead.
 This is the reason the GitHub Action passes `GITHUB_WORKSPACE` through.
 
@@ -113,14 +113,14 @@ This is the reason the GitHub Action passes `GITHUB_WORKSPACE` through.
 The image runs as UID 10001 rather than root. Because callers are expected to
 override the UID with `--user` to match the owner of the mounted project, the
 image cannot rely on a fixed home directory — scanner caches and settings live
-under a world-writable `/var/tmp/gavel`, and `safe.directory` is set
+under a world-writable `/var/tmp/warden`, and `safe.directory` is set
 system-wide so Gitleaks can read a repository owned by another user.
 
 ### Wrappers exist for source checkouts
 
 `bin/` holds shell, PowerShell, and batch wrappers that locate the project root
 and delegate to the installed CLI, preferring `uv run` and falling back to
-`python -m gavel`. They exist so the tool is runnable from a plain checkout
+`python -m warden`. They exist so the tool is runnable from a plain checkout
 without installation. They add no behaviour of their own.
 
 ## Trade-offs not taken

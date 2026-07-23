@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Extensionless entrypoint so users can run: gavel
+# Extensionless entrypoint so users can run: warden
 
 # If this script is installed via symlink (common on Linux/Docker), resolve the
-# real directory so we can find gavel.sh reliably.
+# real directory so we can find warden.sh reliably.
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do
 	DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
@@ -13,4 +13,4 @@ while [ -h "$SOURCE" ]; do
 done
 
 SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
-exec "$SCRIPT_DIR/gavel.sh" "$@"
+exec "$SCRIPT_DIR/warden.sh" "$@"

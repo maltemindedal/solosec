@@ -3,7 +3,7 @@ requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
-name = "gavel"
+name = "warden"
 version = "0.1.0"
 description = "Security automation for development teams."
 readme = "README.md"
@@ -13,9 +13,9 @@ authors = [{ name = "maltemindedal" }]
 dependencies = ["rich>=13.9,<15", "semgrep>=1.128,<2"]
 
 [project.scripts]
-gavel = "gavel.cli:main"
-gavel-config = "gavel.config:main"
-gavel-aggregate = "gavel.aggregate:main"
+warden = "warden.cli:main"
+warden-config = "warden.config:main"
+warden-aggregate = "warden.aggregate:main"
 
 [dependency-groups]
 dev = ["pyright>=1.1.400,<2", "pytest>=9.0.3,<10", "pytest-cov>=6.1,<7", "ruff>=0.11.6,<0.12"]
@@ -32,11 +32,11 @@ default-groups = ["dev"]
 override-dependencies = ["mcp>=1.28.1"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/gavel"]
+packages = ["src/warden"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-  "src/gavel",
+  "src/warden",
   "bin",
   "README.md",
   "LICENSE",

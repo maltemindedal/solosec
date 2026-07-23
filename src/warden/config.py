@@ -15,7 +15,7 @@ RawConfig = dict[str, RawConfigValue]
 
 KNOWN_TOOLS = ("trivy", "semgrep", "gitleaks", "zap")
 
-CONFIG_FILENAME = ".gavel.yaml"
+CONFIG_FILENAME = ".warden.yaml"
 
 
 def _strip_comment(line: str) -> str:
@@ -189,7 +189,7 @@ def _bash_escape(value: str) -> str:
 
 
 def _parse_args(argv: list[str] | None = None) -> tuple[CliOptions, OutputFormat]:
-    parser = argparse.ArgumentParser(prog="gavel-config")
+    parser = argparse.ArgumentParser(prog="warden-config")
     parser.add_argument("project_root", help="Project root directory")
     parser.add_argument("--cli-url", default="", help="URL passed via CLI (overrides config)")
     parser.add_argument("--config", default=None, help=f"Path to {CONFIG_FILENAME}")
@@ -230,8 +230,8 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 0
 
-    print(f"GAVEL_URL={_bash_escape(resolved.url)}")
-    print(f"GAVEL_EXCLUDE_DIRS={_bash_escape(','.join(resolved.exclude_dirs))}")
+    print(f"WARDEN_URL={_bash_escape(resolved.url)}")
+    print(f"WARDEN_EXCLUDE_DIRS={_bash_escape(','.join(resolved.exclude_dirs))}")
     for tool_name, enabled in resolved.tools.as_dict().items():
-        print(f"GAVEL_TOOL_{tool_name.upper()}={'1' if enabled else '0'}")
+        print(f"WARDEN_TOOL_{tool_name.upper()}={'1' if enabled else '0'}")
     return 0

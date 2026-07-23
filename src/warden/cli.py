@@ -9,7 +9,7 @@ from ._models import CliOptions, ToolSelection
 
 
 def _parse_args(argv: list[str] | None = None) -> CliOptions:
-    parser = argparse.ArgumentParser(prog="gavel", description="Run the Gavel security audit.")
+    parser = argparse.ArgumentParser(prog="warden", description="Run the Warden security audit.")
     parser.add_argument(
         "-u",
         "--url",

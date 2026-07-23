@@ -1,15 +1,15 @@
 # Configuring scans
 
-How to adjust what Gavel scans using a `.gavel.yaml` file in your project
+How to adjust what Warden scans using a `.warden.yaml` file in your project
 root. For the exhaustive key list, see
 [Configuration reference](../reference/configuration.md).
 
 ## Check what is in effect
 
-Before and after any change, confirm what Gavel resolved:
+Before and after any change, confirm what Warden resolved:
 
 ```bash
-gavel-config .
+warden-config .
 ```
 
 ```json
@@ -34,7 +34,7 @@ exclude_dirs:
 Verify:
 
 ```bash
-gavel-config .
+warden-config .
 ```
 
 ```json
@@ -72,12 +72,12 @@ Rather than passing `--url` every time, record it:
 target_url: "http://localhost:3000"
 ```
 
-`gavel` now runs ZAP whenever that app is up. A `--url` flag on the command
+`warden` now runs ZAP whenever that app is up. A `--url` flag on the command
 line takes precedence.
 
 > **Careful:** setting `tools.zap: false` blanks the target URL completely, and
 > it does so *after* the CLI flag is applied. With `zap: false` in your config,
-> even `gavel --url http://localhost:3000` will skip ZAP. If a DAST scan is
+> even `warden --url http://localhost:3000` will skip ZAP. If a DAST scan is
 > being skipped unexpectedly, check this first.
 
 ## A worked example
@@ -100,13 +100,13 @@ tools:
 Confirm it parsed as intended:
 
 ```bash
-gavel-config .
+warden-config .
 ```
 
 Then run the scan with the dev server up:
 
 ```bash
-gavel
+warden
 ```
 
 ## Use a config file from elsewhere
@@ -114,24 +114,24 @@ gavel
 To share one config across repositories, point at it directly:
 
 ```bash
-gavel --config /path/to/shared.gavel.yaml
+warden --config /path/to/shared.warden.yaml
 ```
 
-The file is read from that path instead of `<project-root>/.gavel.yaml`. The
+The file is read from that path instead of `<project-root>/.warden.yaml`. The
 project root itself is unchanged — use `--project-root` to scan somewhere else:
 
 ```bash
-gavel --project-root /path/to/project --config /path/to/shared.gavel.yaml
+warden --project-root /path/to/project --config /path/to/shared.warden.yaml
 ```
 
 ## Keep in mind: the parser is not real YAML
 
-`.gavel.yaml` is read by a small hand-written parser, not a YAML library. It
+`.warden.yaml` is read by a small hand-written parser, not a YAML library. It
 handles top-level scalars, a `-` list under `exclude_dirs`, a one-level mapping
 under `tools`, and `#` comments. Anything more elaborate — anchors, nested
 mappings, inline `[a, b]` collections — is not supported and will be ignored
 rather than rejected.
 
-This is why `gavel-config .` is the reliable way to check your work. See the
+This is why `warden-config .` is the reliable way to check your work. See the
 [format notes](../reference/configuration.md#the-config-file-format-is-a-yaml-subset)
 for the full list of what is and isn't supported.

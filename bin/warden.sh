@@ -12,13 +12,13 @@ SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 if command -v uv >/dev/null 2>&1 && [ -f "$PROJECT_ROOT/pyproject.toml" ]; then
-	exec uv run --directory "$PROJECT_ROOT" gavel "$@"
+	exec uv run --directory "$PROJECT_ROOT" warden "$@"
 fi
 
 export PYTHONPATH="$PROJECT_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
 
 if command -v python3 >/dev/null 2>&1; then
-	exec python3 -m gavel "$@"
+	exec python3 -m warden "$@"
 fi
 
-exec python -m gavel "$@"
+exec python -m warden "$@"

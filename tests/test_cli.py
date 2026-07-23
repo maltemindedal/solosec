@@ -5,8 +5,8 @@ from pathlib import Path
 
 from pytest import MonkeyPatch
 
-from gavel import cli
-from gavel.tooling import ToolRunResult
+from warden import cli
+from warden.tooling import ToolRunResult
 
 
 def _successful_result(name: str, report_path: Path) -> ToolRunResult:
@@ -45,7 +45,7 @@ def _fake_run_gitleaks(
 
 
 def test_cli_uses_cli_url_for_zap(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
-    (tmp_path / ".gavel.yaml").write_text(
+    (tmp_path / ".warden.yaml").write_text(
         'target_url: "http://from-config"\n',
         encoding="utf-8",
     )
@@ -93,7 +93,7 @@ def test_cli_rewrites_localhost_target_for_zap(
 
 
 def test_cli_skips_disabled_tools(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
-    (tmp_path / ".gavel.yaml").write_text(
+    (tmp_path / ".warden.yaml").write_text(
         """
         tools:
           trivy: false

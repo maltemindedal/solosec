@@ -1,14 +1,14 @@
-# Gavel - Docker image (containerized runner)
+# Warden - Docker image (containerized runner)
 # Build:
-#   docker build -t gavel:local .
+#   docker build -t warden:local .
 # Run (the image is unprivileged, so --user is required on Linux for the report
 # to be writable back into the bind-mounted project):
-#   docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/src" gavel:local
+#   docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/src" warden:local
 # With DAST, which additionally needs the docker socket and its group:
 #   docker run --rm --user "$(id -u):$(id -g)" \
 #     --group-add "$(getent group docker | cut -d: -f3)" \
 #     -v "$(pwd):/src" -v /var/run/docker.sock:/var/run/docker.sock \
-#     gavel:local -u "http://host.docker.internal:3000"
+#     warden:local -u "http://host.docker.internal:3000"
 
 FROM python:3.11-slim-bookworm
 
@@ -38,7 +38,7 @@ RUN apt-get update \
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
   | sh -s -- -b /usr/local/bin ${TRIVY_VERSION}
 
-# uv + Gavel runtime dependencies
+# uv + Warden runtime dependencies
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
  && ln -sf /root/.local/bin/uv /usr/local/bin/uv
 
@@ -59,41 +59,41 @@ RUN set -eu; \
     rm -f /tmp/gitleaks.tgz; \
     chmod +x /usr/local/bin/gitleaks
 
-# Copy Gavel scripts into the image
-WORKDIR /opt/gavel
+# Copy Warden scripts into the image
+WORKDIR /opt/warden
 COPY pyproject.toml uv.lock README.md LICENSE ./
 COPY src/ ./src/
 COPY bin/ ./bin/
 
 RUN uv sync --frozen --no-dev \
- && chmod +x ./bin/gavel ./bin/gavel.sh \
- && ln -sf /opt/gavel/.venv/bin/gavel /usr/local/bin/gavel
+ && chmod +x ./bin/warden ./bin/warden.sh \
+ && ln -sf /opt/warden/.venv/bin/warden /usr/local/bin/warden
 
-ENV PATH="/opt/gavel/.venv/bin:${PATH}"
+ENV PATH="/opt/warden/.venv/bin:${PATH}"
 
 # Run as a non-root user. Callers are also expected to override the uid to match
 # the owner of the bind-mounted project (see action.yml), so every path the tools
 # write to at runtime must be usable by an arbitrary uid -- hence the sticky
 # world-writable state directory rather than a real home under /home.
-RUN useradd --no-create-home --uid 10001 --shell /usr/sbin/nologin gavel \
- && mkdir -p /var/tmp/gavel \
- && chmod 1777 /var/tmp/gavel
+RUN useradd --no-create-home --uid 10001 --shell /usr/sbin/nologin warden \
+ && mkdir -p /var/tmp/warden \
+ && chmod 1777 /var/tmp/warden
 
-ENV HOME=/var/tmp/gavel \
-    XDG_CACHE_HOME=/var/tmp/gavel/cache \
-    XDG_CONFIG_HOME=/var/tmp/gavel/config \
-    XDG_DATA_HOME=/var/tmp/gavel/data \
-    TRIVY_CACHE_DIR=/var/tmp/gavel/cache/trivy \
-    SEMGREP_SETTINGS_FILE=/var/tmp/gavel/config/semgrep/settings.yml
+ENV HOME=/var/tmp/warden \
+    XDG_CACHE_HOME=/var/tmp/warden/cache \
+    XDG_CONFIG_HOME=/var/tmp/warden/config \
+    XDG_DATA_HOME=/var/tmp/warden/data \
+    TRIVY_CACHE_DIR=/var/tmp/warden/cache/trivy \
+    SEMGREP_SETTINGS_FILE=/var/tmp/warden/config/semgrep/settings.yml
 
 # /src is owned by the host user, so git (and therefore gitleaks) would otherwise
 # refuse to operate on it under a different uid. Set system-wide rather than via
 # GIT_CONFIG_* env vars so it survives any HOME the caller supplies.
 RUN git config --system --add safe.directory '*'
 
-USER gavel
+USER warden
 
 # The scanned project is expected to be bind-mounted at /src
 WORKDIR /src
 
-ENTRYPOINT ["gavel"]
+ENTRYPOINT ["warden"]

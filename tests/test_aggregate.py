@@ -3,7 +3,7 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-from gavel.aggregate import build_report, compute_human_summary, normalize_severity
+from warden.aggregate import build_report, compute_human_summary, normalize_severity
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures"
 

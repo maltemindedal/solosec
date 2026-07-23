@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from gavel.config import parse_minimal_yaml, resolve_config
+from warden.config import parse_minimal_yaml, resolve_config
 
 
 def test_parse_minimal_yaml_handles_lists_and_tools() -> None:
@@ -24,7 +24,7 @@ def test_parse_minimal_yaml_handles_lists_and_tools() -> None:
 
 
 def test_resolve_config_prefers_cli_url(tmp_path: Path) -> None:
-    config_path = tmp_path / ".gavel.yaml"
+    config_path = tmp_path / ".warden.yaml"
     config_path.write_text('target_url: "http://from-config"\n', encoding="utf-8")
 
     resolved = resolve_config(project_root=tmp_path, cli_url="http://from-cli")
@@ -33,7 +33,7 @@ def test_resolve_config_prefers_cli_url(tmp_path: Path) -> None:
 
 
 def test_resolve_config_clears_url_when_zap_is_disabled(tmp_path: Path) -> None:
-    config_path = tmp_path / ".gavel.yaml"
+    config_path = tmp_path / ".warden.yaml"
     config_path.write_text(
         """
         target_url: "http://localhost:3000"
