@@ -28,7 +28,16 @@ runs:
         ARGS=()
         if [ -n "$URL" ]; then ARGS+=(--url "$URL"); fi
 
+        # The image runs as a non-root user. Match the runner's uid/gid so the
+        # report can be written back into the bind-mounted workspace, and grant the
+        # docker socket's own group so the optional ZAP run can still reach it.
+        # Read the gid off the socket rather than assuming a group named "docker".
+        DOCKER_OPTS=(--user "$(id -u):$(id -g)")
+        SOCK_GID="$(stat -c '%g' /var/run/docker.sock 2>/dev/null || true)"
+        if [ -n "$SOCK_GID" ]; then DOCKER_OPTS+=(--group-add "$SOCK_GID"); fi
+
         docker run --rm \
+          "${DOCKER_OPTS[@]}" \
           -v "${GITHUB_WORKSPACE}:/src" \
           -v /var/run/docker.sock:/var/run/docker.sock \
           -e GITHUB_WORKSPACE="${GITHUB_WORKSPACE}" \
@@ -36,7 +45,7 @@ runs:
 
     - name: Upload reports
       if: ${{ always() && inputs.upload-artifact == 'true' }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: ${{ inputs.artifact-name }}
         path: |

@@ -62,13 +62,15 @@ docker build -t mindedal/solosec .
 Run it against the current folder (report is written to your project as `security_audit.json`):
 
 ```bash
-docker run --rm -v "$(pwd):/src" mindedal/solosec
+docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/src" mindedal/solosec
 ```
 
-Optional DAST (OWASP ZAP) requires Docker access from inside the container (mount the Docker socket):
+Optional DAST (OWASP ZAP) requires Docker access from inside the container (mount the Docker socket). Because the container runs unprivileged, it also needs to join the host's `docker` group to reach the socket:
 
 ```bash
 docker run --rm \
+    --user "$(id -u):$(id -g)" \
+    --group-add "$(getent group docker | cut -d: -f3)" \
     -v "$(pwd):/src" \
     -v /var/run/docker.sock:/var/run/docker.sock \
     mindedal/solosec -u "http://host.docker.internal:3000"
@@ -77,7 +79,7 @@ docker run --rm \
 **Notes:**
 
 - On Linux, DAST against a host-only service can be more complex. Consider scanning a service running in Docker and use its container/network address, or expose it and target your host IP.
-- If file ownership is inconvenient on Linux, you can add `--user "$(id -u):$(id -g)"` to the `docker run` command.
+- The image runs as a non-root user, so on Linux `--user "$(id -u):$(id -g)"` is required: without it the container cannot write the report into your project directory. On Docker Desktop (macOS/Windows) the bind mount ignores ownership, so the flag is harmless but unnecessary.
 
 ---
 

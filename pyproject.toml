@@ -21,6 +21,10 @@ solosec-aggregate = "solosec.aggregate:main"
 dev = ["pyright>=1.1.400,<2", "pytest>=9.0.3,<10", "pytest-cov>=6.1,<7", "ruff>=0.11.6,<0.12"]
 
 [tool.uv]
+# Dependency cooldown: ignore distributions published in the last 7 days, so a
+# freshly-published malicious or yanked release cannot be picked up silently.
+# Relative rather than a fixed date, so the window rolls without maintenance.
+exclude-newer = "7 days"
 default-groups = ["dev"]
 # semgrep pins mcp==1.23.3, which carries GHSA-hvrp-rf83-w775, GHSA-jpw9-pfvf-9f58
 # and GHSA-vj7q-gjh5-988w. We only use semgrep's CLI scanner, never its MCP server,

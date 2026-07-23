@@ -1,9 +1,14 @@
 # SoloSec - Docker image (containerized runner)
 # Build:
 #   docker build -t solosec:local .
-# Run:
-#   docker run --rm -v "$(pwd):/src" solosec:local
-#   docker run --rm -v "$(pwd):/src" solosec:local -u "http://host.docker.internal:3000"
+# Run (the image is unprivileged, so --user is required on Linux for the report
+# to be writable back into the bind-mounted project):
+#   docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/src" solosec:local
+# With DAST, which additionally needs the docker socket and its group:
+#   docker run --rm --user "$(id -u):$(id -g)" \
+#     --group-add "$(getent group docker | cut -d: -f3)" \
+#     -v "$(pwd):/src" -v /var/run/docker.sock:/var/run/docker.sock \
+#     solosec:local -u "http://host.docker.internal:3000"
 
 FROM python:3.11-slim-bookworm
 
@@ -65,6 +70,28 @@ RUN uv sync --frozen --no-dev \
  && ln -sf /opt/solosec/.venv/bin/solosec /usr/local/bin/solosec
 
 ENV PATH="/opt/solosec/.venv/bin:${PATH}"
+
+# Run as a non-root user. Callers are also expected to override the uid to match
+# the owner of the bind-mounted project (see action.yml), so every path the tools
+# write to at runtime must be usable by an arbitrary uid -- hence the sticky
+# world-writable state directory rather than a real home under /home.
+RUN useradd --no-create-home --uid 10001 --shell /usr/sbin/nologin solosec \
+ && mkdir -p /var/tmp/solosec \
+ && chmod 1777 /var/tmp/solosec
+
+ENV HOME=/var/tmp/solosec \
+    XDG_CACHE_HOME=/var/tmp/solosec/cache \
+    XDG_CONFIG_HOME=/var/tmp/solosec/config \
+    XDG_DATA_HOME=/var/tmp/solosec/data \
+    TRIVY_CACHE_DIR=/var/tmp/solosec/cache/trivy \
+    SEMGREP_SETTINGS_FILE=/var/tmp/solosec/config/semgrep/settings.yml
+
+# /src is owned by the host user, so git (and therefore gitleaks) would otherwise
+# refuse to operate on it under a different uid. Set system-wide rather than via
+# GIT_CONFIG_* env vars so it survives any HOME the caller supplies.
+RUN git config --system --add safe.directory '*'
+
+USER solosec
 
 # The scanned project is expected to be bind-mounted at /src
 WORKDIR /src
