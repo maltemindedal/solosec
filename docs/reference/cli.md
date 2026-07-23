@@ -1,0 +1,148 @@
+# CLI reference
+
+SoloSec installs three console scripts. `solosec` is the one you normally run;
+the other two expose internal stages for scripting and debugging.
+
+| Command | Purpose |
+| --- | --- |
+| [`solosec`](#solosec) | Run the full audit: scanners, then aggregation. |
+| [`solosec-config`](#solosec-config) | Resolve `.solosec.yaml` and print the effective configuration. |
+| [`solosec-aggregate`](#solosec-aggregate) | Merge existing tool reports into `security_audit.json`. |
+
+---
+
+## `solosec`
+
+Runs the enabled scanners over a project, writes `security_audit.json`, and
+exits non-zero if any Critical or High finding is present.
+
+```
+usage: solosec [-h] [-u URL] [--project-root PROJECT_ROOT] [--config CONFIG]
+```
+
+### Options
+
+| Flag | Default | Effect |
+| --- | --- | --- |
+| `-u`, `--url`, `-Url`, `--Url` | `""` | DAST target URL. Enables the ZAP stage. Overrides `target_url` from the config file. |
+| `--project-root` | `.` | Directory to scan. Resolved to an absolute path; the report is written here. |
+| `--config` | `<project-root>/.solosec.yaml` | Path to an alternate config file. |
+| `-h`, `--help` | — | Print usage and exit. |
+
+The `-Url` and `--Url` spellings exist so the same invocation works in
+PowerShell habits and POSIX shells. All four spellings set the same value.
+
+### Behaviour
+
+- **A URL alone is not enough to run ZAP.** If `tools.zap` is `false` in the
+  config, the resolved URL is discarded and ZAP is skipped, even when `--url` is
+  passed explicitly. See [Configuration](configuration.md#interaction-between-target_url-and-toolszap).
+- `localhost` and `127.0.0.1` in the URL are rewritten to
+  `host.docker.internal` before ZAP runs, so the ZAP container can reach an app
+  on the host.
+- The report directory `.security_reports/` is created inside the project root
+  if absent, and `.security_reports/` is appended to the project's `.gitignore`
+  if that file exists and does not already list it.
+
+### Exit codes
+
+| Code | Meaning |
+| --- | --- |
+| `0` | No Critical or High findings. Printed as `PASS`. |
+| `1` | At least one Critical or High finding. Printed as `FAIL`. |
+
+Medium, Low, Info, and Unknown findings never affect the exit code. The
+threshold is fixed at Critical and High and is not currently configurable from
+the CLI or the config file.
+
+A scanner that fails to run does **not** by itself cause a non-zero exit. The
+failure is printed as a warning and the run continues with whatever reports were
+produced — so a scan can report `PASS` while a tool was silently unavailable.
+See [Troubleshooting](../guides/troubleshooting.md#a-tool-was-skipped-or-warned-but-the-scan-still-passed).
+
+### Per-tool exit-code handling
+
+Each scanner has its own notion of a clean run. SoloSec treats these codes as
+success and anything else as a warning:
+
+| Tool | Accepted exit codes | Notes |
+| --- | --- | --- |
+| Trivy | `0` | |
+| Semgrep | `0`, `1` | Semgrep exits `1` when it has findings, which is not an error. |
+| Gitleaks | `0` | Invoked with `--exit-code 0` so leaks do not fail the process. |
+| ZAP | `0` | Invoked with `-I` so informational alerts do not fail the process. |
+
+A tool whose report file exists is also treated as having succeeded, regardless
+of exit code.
+
+---
+
+## `solosec-config`
+
+Resolves the configuration for a project and prints it. Useful for confirming
+what SoloSec will actually do before running a scan.
+
+```
+usage: solosec-config [-h] [--cli-url CLI_URL] [--config CONFIG]
+                      [--format {json,bash}]
+                      project_root
+```
+
+| Argument | Default | Effect |
+| --- | --- | --- |
+| `project_root` | required | Directory whose config to resolve. |
+| `--cli-url` | `""` | Simulate a `--url` flag, to check precedence. |
+| `--config` | `<project_root>/.solosec.yaml` | Alternate config path. |
+| `--format` | `json` | `json` for a single object, `bash` for shell-assignable variables. |
+
+Exits `0`.
+
+### Examples
+
+```console
+$ solosec-config .
+{"url": "", "exclude_dirs": [], "tools": {"trivy": true, "semgrep": true, "gitleaks": true, "zap": true}}
+```
+
+```console
+$ solosec-config . --format bash
+SOLOSEC_URL=''
+SOLOSEC_EXCLUDE_DIRS=''
+SOLOSEC_TOOL_TRIVY=1
+SOLOSEC_TOOL_SEMGREP=1
+SOLOSEC_TOOL_GITLEAKS=1
+SOLOSEC_TOOL_ZAP=1
+```
+
+In `bash` format, values are single-quote escaped, `exclude_dirs` is joined with
+commas, and each tool becomes `SOLOSEC_TOOL_<NAME>` set to `1` or `0`.
+
+---
+
+## `solosec-aggregate`
+
+Merges scanner JSON reports that already exist into a single report. This is the
+second half of `solosec`, exposed separately — it runs no scanners.
+
+```
+usage: solosec-aggregate [-h] report_dir output_file
+```
+
+| Argument | Effect |
+| --- | --- |
+| `report_dir` | Directory holding `trivy.json`, `semgrep.json`, `gitleaks.json`, and/or `zap.json`. Missing files are skipped. |
+| `output_file` | Path to write the aggregated report. Parent directories are created. |
+
+Exit codes match `solosec`: `1` if any Critical or High finding is present,
+otherwise `0`.
+
+### Example
+
+```console
+$ solosec-aggregate .security_reports security_audit.json
+--- Aggregating Reports from /path/to/.security_reports ---
+Generated security_audit.json with 4 issues.
+```
+
+The filenames it looks for are fixed. See
+[Report format](report-format.md#input-files) for the exact list.

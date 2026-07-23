@@ -1,181 +1,129 @@
 # SoloSec
 
-**Security automation for development teams.**
+**One command to run four security scanners across your project and get one
+answer.**
 
-Automated DevSecOps wrapper for Windows, macOS, and Linux. Runs industry-standard security tools with a single command.
+SoloSec orchestrates Trivy, Semgrep, Gitleaks, and OWASP ZAP, merges their
+output into a single report, and exits non-zero when it finds anything Critical
+or High. Each of those tools has its own flags, output format, and severity
+vocabulary; SoloSec reconciles them so you can gate a build on one exit code
+instead of four. It runs the same way on Windows, macOS, and Linux, locally or
+in CI.
 
-## Tools Included
+| Tool | Finds |
+| --- | --- |
+| [Trivy](https://trivy.dev) | Vulnerable dependencies, misconfigured infrastructure |
+| [Semgrep](https://semgrep.dev) | Insecure code patterns (SAST) |
+| [Gitleaks](https://github.com/gitleaks/gitleaks) | Committed secrets |
+| [OWASP ZAP](https://www.zaproxy.org) | Vulnerabilities in a running web app (DAST, optional) |
 
-- **Trivy** - Dependencies & IaC scanning
-- **Semgrep** - SAST / Code Quality analysis
-- **Gitleaks** - Secret Detection
-- **OWASP ZAP** - DAST / Dynamic Application Security Testing
+## Quick start
 
----
+Requires **Python 3.11+**, **Docker**, and **Git**. The installer fetches uv,
+Trivy, and Gitleaks if you don't already have them.
 
-## Installation
-
-SoloSec is now managed with `uv`, so local development, linting, formatting, and type-checking all run through the same project environment.
-
-### PowerShell
-
-```powershell
-git clone https://github.com/mindedal/solosec.git
+```bash
+git clone https://github.com/maltemindedal/solosec.git
 cd solosec
-.\install.ps1
+./install.sh          # Windows: .\install.ps1
 ```
 
-### macOS / Linux
+Then scan any project:
 
 ```bash
-git clone https://github.com/mindedal/solosec.git
-cd solosec
-./install.sh
+cd /path/to/your/project
+solosec
 ```
 
-### Develop with `uv`
+```
+[1/4] Running Trivy...
+   -> Done.
+[2/4] Running Semgrep...
+   -> Done.
+[3/4] Running Gitleaks...
+   -> Done.
+[4/4] Skipping ZAP (no URL provided or disabled).
 
-```bash
-uv sync --python 3.11
-uv run solosec --help
+[*] Generating Final Report...
+Generated security_audit.json with 4 issues.
+--------------------------------------------------
+┏━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━┓
+┃ Severity ┃ Count ┃ Breakdown  ┃
+┡━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━┩
+│ Critical │     1 │ Secrets: 1 │
+│ High     │     1 │ Deps: 1    │
+│ Medium   │     2 │            │
+└──────────┴───────┴────────────┘
+--------------------------------------------------
+FAIL: High/Critical issues found. See security_audit.json
 ```
 
-Quality commands:
-
-```bash
-uv run ruff format .
-uv run ruff check .
-uv run pyright
-uv run pytest
-```
-
-### Docker (containerized execution)
-
-If you already have Docker, you can run SoloSec without installing Python/Trivy/Semgrep/Gitleaks on your machine.
-
-Build the image:
-
-```bash
-docker build -t mindedal/solosec .
-```
-
-Run it against the current folder (report is written to your project as `security_audit.json`):
-
-```bash
-docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/src" mindedal/solosec
-```
-
-Optional DAST (OWASP ZAP) requires Docker access from inside the container (mount the Docker socket). Because the container runs unprivileged, it also needs to join the host's `docker` group to reach the socket:
-
-```bash
-docker run --rm \
-    --user "$(id -u):$(id -g)" \
-    --group-add "$(getent group docker | cut -d: -f3)" \
-    -v "$(pwd):/src" \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    mindedal/solosec -u "http://host.docker.internal:3000"
-```
-
-**Notes:**
-
-- On Linux, DAST against a host-only service can be more complex. Consider scanning a service running in Docker and use its container/network address, or expose it and target your host IP.
-- The image runs as a non-root user, so on Linux `--user "$(id -u):$(id -g)"` is required: without it the container cannot write the report into your project directory. On Docker Desktop (macOS/Windows) the bind mount ignores ownership, so the flag is harmless but unnecessary.
-
----
+Full findings land in `security_audit.json`; raw scanner output in
+`.security_reports/`.
 
 ## Usage
 
-Go to any project folder and run:
-
-```powershell
-# Scan code only
-solosec
-
-# Scan code + run DAST against a running app
-solosec -Url http://localhost:3000
-```
-
-On macOS/Linux (bash/zsh):
+Scan the current directory:
 
 ```bash
-# Scan code + run DAST
+solosec
+```
+
+Add a DAST scan against a running application:
+
+```bash
 solosec --url "http://localhost:3000"
 ```
 
----
+Or without installing anything, using the bundled container:
 
-## CI/CD (GitHub Actions)
-
-GitHub Actions (and most CI systems) decide whether a job is **Pass (green)** or **Fail (red)** based on the **process exit code**:
-
-- Exit code `0` → pass
-- Exit code `!= 0` → fail
-
-SoloSec is designed to have “teeth” in CI:
-
-- The typed Python CLI exits **non-zero** if it finds any **HIGH** or **CRITICAL** issues.
-- The wrapper scripts simply forward to the packaged CLI.
-
-This repo includes a ready-to-use workflow at `.github/workflows/ci.yml` that:
-
-1. Builds the included `Dockerfile` (so Trivy/Semgrep/Gitleaks are available)
-2. Runs `solosec` against your repository
-3. Uploads `security_audit.json` and `.security_reports/` as build artifacts
-
-If you want to run ZAP (DAST) in CI, trigger the workflow manually and pass the `url` input.
-
-### Use SoloSec from other repositories
-
-This repo also ships as a reusable GitHub Action (composite action). In another repository, add a workflow step like:
-
-```yaml
-- name: SoloSec scan
-  uses: mindedal/solosec@v1
-  with:
-    # Optional: enables OWASP ZAP (requires docker socket access)
-    # url: http://host.docker.internal:3000
-    upload-artifact: true
-    artifact-name: solosec-report
+```bash
+docker build -t solosec:local .
+docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/src" solosec:local
 ```
 
-**Important:** for stable usage, create a tag/release like `v1` in this repo and update it when you publish compatible changes.
-
----
-
-## Config File (.solosec.yaml)
-
-You can configure SoloSec per-repository by adding a `.solosec.yaml` file at the project root.
-
-Example:
+Configure per-project with a `.solosec.yaml`:
 
 ```yaml
 target_url: "http://localhost:3000"
 exclude_dirs:
-  - "tests/"
-  - "legacy/"
+  - "node_modules/"
 tools:
-  zap: true
-  semgrep: true
   gitleaks: false
-  trivy: true
 ```
 
-**Notes:**
+## Documentation
 
-- `target_url` enables OWASP ZAP DAST (unless `tools.zap: false`).
-- `exclude_dirs` is applied to Trivy (`--skip-dirs`), Semgrep (`--exclude`), and Gitleaks (`--exclude-path`).
-- CLI flags override config (e.g., `solosec -Url ...` wins over `target_url`).
+| Guide | For |
+| --- | --- |
+| [Getting started](docs/getting-started.md) | First install and first scan, start to finish |
+| [Configuring scans](docs/guides/configuring-scans.md) | Excluding directories, disabling tools, setting a DAST target |
+| [Running with Docker](docs/guides/running-with-docker.md) | Containerised scans, including the DAST setup |
+| [Using SoloSec in CI](docs/guides/ci-github-actions.md) | GitHub Actions, and other CI systems |
+| [Troubleshooting](docs/guides/troubleshooting.md) | Skipped tools, permission errors, config that won't take |
+| [CLI reference](docs/reference/cli.md) | Every command, flag, and exit code |
+| [Configuration reference](docs/reference/configuration.md) | Every config key and environment variable |
+| [Report format](docs/reference/report-format.md) | The `security_audit.json` schema and severity mapping |
+| [Architecture](docs/architecture/overview.md) | How it fits together and why |
 
----
+Full index: [docs/README.md](docs/README.md).
 
-## Project Layout
+## Project structure
 
-- `src/solosec/` — typed Python package and CLI implementation
-- `bin/` — compatibility wrappers for source checkouts
-- `tests/` — pytest coverage for config parsing, aggregation, and CLI behavior
+```
+src/solosec/     Typed Python package and CLI implementation
+bin/             Shell and PowerShell wrappers for running from a checkout
+tests/           Pytest suite, with scanner output fixtures
+docs/            Documentation
+action.yml       Composite GitHub Action
+Dockerfile       Container bundling SoloSec with the scanners
+```
 
----
+## Contributing
+
+See [docs/contributing.md](docs/contributing.md) for the development setup and
+the quality gate (`ruff`, `pyright`, `pytest`).
 
 ## License
 
-MIT License — see `LICENSE`.
+MIT — see [LICENSE](LICENSE).

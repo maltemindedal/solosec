@@ -1,0 +1,130 @@
+# Contributing
+
+## Development environment
+
+SoloSec uses [uv](https://docs.astral.sh/uv/) for dependency and environment
+management. From a clone:
+
+```bash
+uv sync --python 3.11
+```
+
+This creates a virtual environment with the runtime and development
+dependencies. To reproduce CI exactly, install from the lockfile without
+updating it:
+
+```bash
+uv sync --frozen
+```
+
+Run the CLI from the checkout without installing it:
+
+```bash
+uv run solosec --help
+```
+
+## The quality gate
+
+Four checks, each run by CI in this order. Run them locally before pushing:
+
+```bash
+uv run ruff format --check .
+uv run ruff check .
+uv run pyright
+uv run pytest
+```
+
+To apply formatting rather than only check it:
+
+```bash
+uv run ruff format .
+```
+
+### What each check enforces
+
+| Check | Configured in | Notes |
+| --- | --- | --- |
+| `ruff format` | `[tool.ruff.format]` | 100-character lines, double quotes, spaces. |
+| `ruff check` | `[tool.ruff.lint]` | Rule sets `B`, `E`, `F`, `I`, `UP`, `W`. Import sorting is included via `I`. |
+| `pyright` | `[tool.pyright]` | **Strict mode.** Targets Python 3.11 across `src`, `tests`, and `bin`. |
+| `pytest` | `[tool.pytest.ini_options]` | Tests live in `tests/`, with `src` on the path. |
+
+Pyright runs in strict mode, so new code needs complete type annotations.
+`reportUnnecessaryTypeIgnoreComment` is on, meaning a `# type: ignore` that is
+no longer needed is itself an error.
+
+## Tests
+
+```bash
+uv run pytest
+```
+
+Tests live in `tests/`, with static tool output in `tests/fixtures/`. The
+fixtures are small hand-written samples of each scanner's JSON, used to exercise
+parsing and severity normalisation without running the real scanners. Subprocess
+calls are monkeypatched, so the suite runs without Trivy, Semgrep, Gitleaks, or
+Docker installed.
+
+When adding support for a new field or tool, add a fixture rather than reaching
+for a live scan — it keeps the suite fast and deterministic.
+
+`pytest-cov` is available for coverage runs:
+
+```bash
+uv run pytest --cov=solosec
+```
+
+## Dependencies
+
+Runtime dependencies are declared in `[project.dependencies]`; development tools
+in `[dependency-groups]`. Add one with:
+
+```bash
+uv add <package>
+uv add --dev <package>
+```
+
+Two constraints in `[tool.uv]` are deliberate and will affect you:
+
+- **`exclude-newer = "7 days"`** — a dependency cooldown. Distributions published
+  in the last seven days are not resolvable, so a freshly-published release
+  cannot be pulled in silently. If a lock fails on a very recent version, this is
+  why; wait for it to age out rather than removing the setting.
+- **`override-dependencies = ["mcp>=1.28.1"]`** — Semgrep pins `mcp==1.23.3`,
+  which carries known advisories. SoloSec uses Semgrep's CLI scanner and never
+  its MCP server, so the pin is overridden to the patched release.
+
+Commit `uv.lock` alongside any dependency change.
+
+## CI
+
+`.github/workflows/ci.yml` runs on pushes to `main`, on pull requests, and on
+manual dispatch:
+
+- **`quality`** — the four checks above on Ubuntu with Python 3.11.
+- **`scan`** — runs SoloSec against this repository, gated on `quality` passing.
+
+The `scan` job means the project scans itself: a change that introduces a High
+or Critical finding — including in a workflow file or the `Dockerfile` — will
+fail CI. See [Using SoloSec in CI](guides/ci-github-actions.md).
+
+Actions are pinned to commit SHAs with the version in a trailing comment. When
+updating one, update both.
+
+## Project conventions
+
+- Public functions are typed; internal helpers are prefixed with `_`.
+- Data structures are frozen dataclasses or `TypedDict`s in `_models.py`, kept
+  free of logic.
+- `tooling.py` is the only module that runs subprocesses. Keep scanner
+  invocation there.
+- `from __future__ import annotations` at the top of every module.
+
+## Documentation
+
+Documentation lives in `docs/`, organised by purpose: tutorial, how-to guides,
+reference, explanation. When adding a document, add it to the table in
+[`docs/README.md`](README.md) — that index is the map, and an unlisted file is
+an invisible one.
+
+Verify any command you document by running it.
