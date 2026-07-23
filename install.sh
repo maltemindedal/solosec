@@ -10,7 +10,7 @@ NC='\033[0m'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 UV_BIN_DIR="$HOME/.local/bin"
 
-echo -e "${CYAN}Installing SoloSec...${NC}"
+echo -e "${CYAN}Installing Gavel...${NC}"
 
 OS="$(uname -s)"
 case "$OS" in
@@ -64,7 +64,7 @@ else
 	echo -e "${GREEN}   -> Gitleaks already installed.${NC}"
 fi
 
-echo -e "${CYAN}[*] Installing SoloSec with uv...${NC}"
+echo -e "${CYAN}[*] Installing Gavel with uv...${NC}"
 uv python install 3.11
 uv tool install --force --python 3.11 -e "$SCRIPT_DIR"
 
@@ -79,7 +79,7 @@ fi
 if [[ ":$PATH:" != *":$UV_BIN_DIR:"* ]]; then
 	echo -e "${CYAN}[*] Adding '$UV_BIN_DIR' to your PATH...${NC}"
 	echo "" >> "$SHELL_RC"
-	echo "# SoloSec / uv tools" >> "$SHELL_RC"
+	echo "# Gavel / uv tools" >> "$SHELL_RC"
 	echo "export PATH=\"$UV_BIN_DIR:\$PATH\"" >> "$SHELL_RC"
 	echo -e "${GREEN}Added to $SHELL_RC${NC}"
 	echo -e "${YELLOW}Restart your terminal or run: source $SHELL_RC${NC}"
@@ -89,4 +89,4 @@ fi
 
 echo ""
 echo -e "${GREEN}Installation complete!${NC}"
-echo -e "Run ${CYAN}solosec${NC} from any project directory to start a security audit."
+echo -e "Run ${CYAN}gavel${NC} from any project directory to start a security audit."

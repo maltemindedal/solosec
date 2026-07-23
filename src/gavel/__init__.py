@@ -1,4 +1,4 @@
-"""SoloSec package."""
+"""Gavel package."""
 
 from .cli import main
 

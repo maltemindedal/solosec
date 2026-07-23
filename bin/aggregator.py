@@ -12,7 +12,7 @@ if str(SRC_DIR) not in sys.path:
 
 
 def _run() -> int:
-    from solosec.aggregate import main
+    from gavel.aggregate import main
 
     return main()
 

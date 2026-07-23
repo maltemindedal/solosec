@@ -12,7 +12,7 @@ if str(SRC_DIR) not in sys.path:
 
 
 def _run() -> int:
-    from solosec.config import main
+    from gavel.config import main
 
     return main()
 

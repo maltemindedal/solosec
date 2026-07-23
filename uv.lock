@@ -450,6 +450,37 @@ wheels = [
 ]
 
 [[package]]
+name = "gavel"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "rich" },
+    { name = "semgrep" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pyright" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "rich", specifier = ">=13.9,<15" },
+    { name = "semgrep", specifier = ">=1.128,<2" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pyright", specifier = ">=1.1.400,<2" },
+    { name = "pytest", specifier = ">=9.0.3,<10" },
+    { name = "pytest-cov", specifier = ">=6.1,<7" },
+    { name = "ruff", specifier = ">=0.11.6,<0.12" },
+]
+
+[[package]]
 name = "glom"
 version = "25.12.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1331,37 +1362,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/35/d4/bff2a3216900c4d564ca84fb2f4ca2811e2127b684edd90124e07b68732d/semgrep-1.168.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-musllinux_1_2_aarch64.whl", hash = "sha256:d288699c4c056cc3d7cf82830e00f9c07fac33227c3a5290a2113bd1be63da46", size = 77644734, upload-time = "2026-06-24T19:39:12.826Z" },
     { url = "https://files.pythonhosted.org/packages/b1/7c/e10a59a82120eb2561281edbbb688419688d8c9b589ca9a32bd47968ae2e/semgrep-1.168.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-musllinux_1_2_x86_64.whl", hash = "sha256:c4a664f4dda097fbdf657d64f79217e94c4d87502c16c991fac569f07aaecb8e", size = 75161809, upload-time = "2026-06-24T19:39:16.695Z" },
     { url = "https://files.pythonhosted.org/packages/eb/b4/3fc0345031d40f49354b1052ac4faf603dcb92019dacdc4b8fd4e3639b9b/semgrep-1.168.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-win_amd64.whl", hash = "sha256:86e99b095b80492b6cfe5087bf4a3b0175a1132c9c9dcd25a96c3745cc58d85a", size = 56931035, upload-time = "2026-06-24T19:39:20.217Z" },
-]
-
-[[package]]
-name = "solosec"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "rich" },
-    { name = "semgrep" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "rich", specifier = ">=13.9,<15" },
-    { name = "semgrep", specifier = ">=1.128,<2" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pyright", specifier = ">=1.1.400,<2" },
-    { name = "pytest", specifier = ">=9.0.3,<10" },
-    { name = "pytest-cov", specifier = ">=6.1,<7" },
-    { name = "ruff", specifier = ">=0.11.6,<0.12" },
 ]
 
 [[package]]

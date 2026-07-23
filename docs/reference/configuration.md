@@ -1,16 +1,16 @@
 # Configuration reference
 
-SoloSec is configured from three places, in increasing order of precedence:
+Gavel is configured from three places, in increasing order of precedence:
 
 1. Built-in defaults
-2. `.solosec.yaml` in the project root
+2. `.gavel.yaml` in the project root
 3. Command-line flags
 
 For task-oriented examples, see [Configuring scans](../guides/configuring-scans.md).
 
 ## The config file format is a YAML subset
 
-`.solosec.yaml` is **not** parsed by a YAML library. SoloSec uses a small
+`.gavel.yaml` is **not** parsed by a YAML library. Gavel uses a small
 hand-written parser that understands only the shapes documented here. This keeps
 the tool dependency-free at the config layer, at the cost of rejecting most of
 YAML.
@@ -27,9 +27,9 @@ What it does **not** support: anchors, multi-line strings, nested mappings
 deeper than one level, inline `[a, b]` or `{a: b}` collections, or documents
 with `---` separators. Unrecognised top-level keys are parsed and then ignored.
 
-A file that cannot be read or parsed is treated as empty — SoloSec falls back to
+A file that cannot be read or parsed is treated as empty — Gavel falls back to
 defaults rather than reporting an error. A malformed config therefore fails
-silently. Verify with `solosec-config .` when in doubt.
+silently. Verify with `gavel-config .` when in doubt.
 
 ## Keys
 
@@ -115,7 +115,7 @@ accepted.
 CLI flag is applied, so it overrides an explicit `--url`:
 
 ```console
-$ solosec-config . --cli-url "http://example.com" --format json
+$ gavel-config . --cli-url "http://example.com" --format json
 {"url": "", "exclude_dirs": [...], "tools": {..., "zap": false}}
 ```
 
@@ -137,23 +137,23 @@ tools:
 
 ## Environment variables
 
-SoloSec reads no environment variables for scanner selection or exclusions —
+Gavel reads no environment variables for scanner selection or exclusions —
 those come only from the config file and flags. The variables below affect where
 the ZAP container mounts its output.
 
 | Variable | Read by | Effect |
 | --- | --- | --- |
-| `SOLOSEC_HOST_REPORT_DIR` | ZAP stage | Absolute host path to mount as ZAP's working directory. Highest precedence. |
-| `SOLOSEC_HOST_WORKSPACE` | ZAP stage | Host path to the project; `.security_reports` under it is mounted. |
+| `GAVEL_HOST_REPORT_DIR` | ZAP stage | Absolute host path to mount as ZAP's working directory. Highest precedence. |
+| `GAVEL_HOST_WORKSPACE` | ZAP stage | Host path to the project; `.security_reports` under it is mounted. |
 | `GITHUB_WORKSPACE` | ZAP stage | Same as above. Set automatically by GitHub Actions. |
 
-These exist because ZAP runs in a sibling container. When SoloSec is itself
+These exist because ZAP runs in a sibling container. When Gavel is itself
 running inside a container, the report path it sees is a container path, which
 the Docker daemon cannot mount. These variables supply the *host* path instead.
 They are consulted in the order listed; if none is set, the in-process report
 directory path is used.
 
-When running SoloSec directly on your machine, leave all three unset.
+When running Gavel directly on your machine, leave all three unset.
 
 The Docker image also sets `HOME`, the `XDG_*` directories, `TRIVY_CACHE_DIR`,
 and `SEMGREP_SETTINGS_FILE` to writable paths so the scanners work under an

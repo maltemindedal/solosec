@@ -9,7 +9,7 @@ from ._models import CliOptions, ToolSelection
 
 
 def _parse_args(argv: list[str] | None = None) -> CliOptions:
-    parser = argparse.ArgumentParser(prog="solosec", description="Run the SoloSec security audit.")
+    parser = argparse.ArgumentParser(prog="gavel", description="Run the Gavel security audit.")
     parser.add_argument(
         "-u",
         "--url",
@@ -24,7 +24,7 @@ def _parse_args(argv: list[str] | None = None) -> CliOptions:
         default=".",
         help="Project root to scan (defaults to the current working directory)",
     )
-    parser.add_argument("--config", default=None, help="Optional path to .solosec.yaml")
+    parser.add_argument("--config", default=None, help=f"Optional path to {config.CONFIG_FILENAME}")
     namespace = parser.parse_args(argv)
     project_root = Path(cast(str, namespace.project_root)).resolve()
     config_path_value = cast(str | None, namespace.config)
@@ -52,19 +52,19 @@ def _run_enabled_tools(
         print("\n[1/4] Running Trivy...")
         _print_result(tooling.run_trivy(project_root, report_dir, exclude_dirs))
     else:
-        print("\n[1/4] Skipping Trivy (disabled in .solosec.yaml).")
+        print(f"\n[1/4] Skipping Trivy (disabled in {config.CONFIG_FILENAME}).")
 
     if tools.semgrep:
         print("[2/4] Running Semgrep...")
         _print_result(tooling.run_semgrep(project_root, report_dir, exclude_dirs))
     else:
-        print("[2/4] Skipping Semgrep (disabled in .solosec.yaml).")
+        print(f"[2/4] Skipping Semgrep (disabled in {config.CONFIG_FILENAME}).")
 
     if tools.gitleaks:
         print("[3/4] Running Gitleaks...")
         _print_result(tooling.run_gitleaks(project_root, report_dir, exclude_dirs))
     else:
-        print("[3/4] Skipping Gitleaks (disabled in .solosec.yaml).")
+        print(f"[3/4] Skipping Gitleaks (disabled in {config.CONFIG_FILENAME}).")
 
     if tools.zap and url:
         print("[4/4] Running ZAP...")

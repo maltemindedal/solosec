@@ -1,12 +1,12 @@
-# SoloSec
+# Gavel
 
 **One command to run four security scanners across your project and get one
 answer.**
 
-SoloSec orchestrates Trivy, Semgrep, Gitleaks, and OWASP ZAP, merges their
+Gavel orchestrates Trivy, Semgrep, Gitleaks, and OWASP ZAP, merges their
 output into a single report, and exits non-zero when it finds anything Critical
 or High. Each of those tools has its own flags, output format, and severity
-vocabulary; SoloSec reconciles them so you can gate a build on one exit code
+vocabulary; Gavel reconciles them so you can gate a build on one exit code
 instead of four. It runs the same way on Windows, macOS, and Linux, locally or
 in CI.
 
@@ -23,8 +23,8 @@ Requires **Python 3.11+**, **Docker**, and **Git**. The installer fetches uv,
 Trivy, and Gitleaks if you don't already have them.
 
 ```bash
-git clone https://github.com/maltemindedal/solosec.git
-cd solosec
+git clone https://github.com/maltemindedal/gavel.git
+cd gavel
 ./install.sh          # Windows: .\install.ps1
 ```
 
@@ -32,7 +32,7 @@ Then scan any project:
 
 ```bash
 cd /path/to/your/project
-solosec
+gavel
 ```
 
 ```
@@ -66,23 +66,23 @@ Full findings land in `security_audit.json`; raw scanner output in
 Scan the current directory:
 
 ```bash
-solosec
+gavel
 ```
 
 Add a DAST scan against a running application:
 
 ```bash
-solosec --url "http://localhost:3000"
+gavel --url "http://localhost:3000"
 ```
 
 Or without installing anything, using the bundled container:
 
 ```bash
-docker build -t solosec:local .
-docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/src" solosec:local
+docker build -t gavel:local .
+docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/src" gavel:local
 ```
 
-Configure per-project with a `.solosec.yaml`:
+Configure per-project with a `.gavel.yaml`:
 
 ```yaml
 target_url: "http://localhost:3000"
@@ -99,7 +99,7 @@ tools:
 | [Getting started](docs/getting-started.md) | First install and first scan, start to finish |
 | [Configuring scans](docs/guides/configuring-scans.md) | Excluding directories, disabling tools, setting a DAST target |
 | [Running with Docker](docs/guides/running-with-docker.md) | Containerised scans, including the DAST setup |
-| [Using SoloSec in CI](docs/guides/ci-github-actions.md) | GitHub Actions, and other CI systems |
+| [Using Gavel in CI](docs/guides/ci-github-actions.md) | GitHub Actions, and other CI systems |
 | [Troubleshooting](docs/guides/troubleshooting.md) | Skipped tools, permission errors, config that won't take |
 | [CLI reference](docs/reference/cli.md) | Every command, flag, and exit code |
 | [Configuration reference](docs/reference/configuration.md) | Every config key and environment variable |
@@ -111,12 +111,12 @@ Full index: [docs/README.md](docs/README.md).
 ## Project structure
 
 ```
-src/solosec/     Typed Python package and CLI implementation
-bin/             Shell and PowerShell wrappers for running from a checkout
-tests/           Pytest suite, with scanner output fixtures
-docs/            Documentation
-action.yml       Composite GitHub Action
-Dockerfile       Container bundling SoloSec with the scanners
+src/gavel/    Typed Python package and CLI implementation
+bin/          Shell and PowerShell wrappers for running from a checkout
+tests/        Pytest suite, with scanner output fixtures
+docs/         Documentation
+action.yml    Composite GitHub Action
+Dockerfile    Container bundling Gavel with the scanners
 ```
 
 ## Contributing

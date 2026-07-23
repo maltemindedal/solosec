@@ -1,6 +1,6 @@
 # Running with Docker
 
-The included `Dockerfile` bundles SoloSec with Trivy, Semgrep, and Gitleaks, so
+The included `Dockerfile` bundles Gavel with Trivy, Semgrep, and Gitleaks, so
 you can scan a project without installing any of them.
 
 No image is published to a registry — you build it locally.
@@ -10,14 +10,14 @@ No image is published to a registry — you build it locally.
 From a clone of this repository:
 
 ```bash
-docker build -t solosec:local .
+docker build -t gavel:local .
 ```
 
 The build pulls Trivy and Gitleaks from their upstream release channels. To pin
 versions instead of taking the latest:
 
 ```bash
-docker build -t solosec:local \
+docker build -t gavel:local \
   --build-arg TRIVY_VERSION=0.58.1 \
   --build-arg GITLEAKS_VERSION=8.21.2 .
 ```
@@ -32,7 +32,7 @@ docker build -t solosec:local \
 Mount the project at `/src`:
 
 ```bash
-docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/src" solosec:local
+docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/src" gavel:local
 ```
 
 The report is written to `security_audit.json` in the mounted directory, owned
@@ -42,12 +42,12 @@ Flags work exactly as they do natively — everything after the image name is
 passed through:
 
 ```bash
-docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/src" solosec:local --help
+docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/src" gavel:local --help
 ```
 
 ## Why the `--user` flag is required
 
-The image runs as an unprivileged user (`solosec`, UID 10001). Without
+The image runs as an unprivileged user (`gavel`, UID 10001). Without
 `--user`, the container writes as UID 10001, which will not have permission to
 create files in a bind-mounted directory owned by you. The scan fails partway
 through with:
@@ -64,13 +64,13 @@ so the flag is unnecessary there — but it is harmless, so the commands above u
 it unconditionally.
 
 Because the container may run as any UID, the image keeps its scanner caches and
-settings under `/var/tmp/solosec` rather than a fixed home directory, and sets
+settings under `/var/tmp/gavel` rather than a fixed home directory, and sets
 `safe.directory` system-wide so Gitleaks can read a repository owned by a
 different user.
 
 ## Add a DAST scan
 
-ZAP runs in its own container, so the SoloSec container needs to talk to the
+ZAP runs in its own container, so the Gavel container needs to talk to the
 Docker daemon. That means mounting the socket — and, because the container is
 unprivileged, granting the socket's group:
 
@@ -80,7 +80,7 @@ docker run --rm \
     --group-add "$(getent group docker | cut -d: -f3)" \
     -v "$(pwd):/src" \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    solosec:local --url "http://host.docker.internal:3000"
+    gavel:local --url "http://host.docker.internal:3000"
 ```
 
 Without `--group-add`, the socket is unreadable and ZAP fails with
@@ -95,7 +95,7 @@ socket instead:
 
 ### Reaching the target application
 
-SoloSec rewrites `localhost` and `127.0.0.1` to `host.docker.internal`
+Gavel rewrites `localhost` and `127.0.0.1` to `host.docker.internal`
 automatically, so `--url http://localhost:3000` usually works from inside a
 container.
 
@@ -108,19 +108,19 @@ service running in Docker by its container or network address, or add:
 
 ### Report paths across containers
 
-ZAP is started by the SoloSec container but runs as a *sibling* under the host's
-Docker daemon, so the path SoloSec passes as a volume must be a **host** path,
-not a container path. Set one of `SOLOSEC_HOST_REPORT_DIR`,
-`SOLOSEC_HOST_WORKSPACE`, or `GITHUB_WORKSPACE` to supply it:
+ZAP is started by the Gavel container but runs as a *sibling* under the host's
+Docker daemon, so the path Gavel passes as a volume must be a **host** path,
+not a container path. Set one of `GAVEL_HOST_REPORT_DIR`,
+`GAVEL_HOST_WORKSPACE`, or `GITHUB_WORKSPACE` to supply it:
 
 ```bash
 docker run --rm \
     --user "$(id -u):$(id -g)" \
     --group-add "$(stat -c '%g' /var/run/docker.sock)" \
-    -e SOLOSEC_HOST_WORKSPACE="$(pwd)" \
+    -e GAVEL_HOST_WORKSPACE="$(pwd)" \
     -v "$(pwd):/src" \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    solosec:local --url "http://host.docker.internal:3000"
+    gavel:local --url "http://host.docker.internal:3000"
 ```
 
 The GitHub Action sets `GITHUB_WORKSPACE` for you. See

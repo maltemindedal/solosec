@@ -1,12 +1,12 @@
 # Getting started
 
-By the end of this tutorial you will have SoloSec installed and a
+By the end of this tutorial you will have Gavel installed and a
 `security_audit.json` report for a project of your choice. It takes about ten
 minutes, most of which is downloading scanner binaries.
 
-## What SoloSec does
+## What Gavel does
 
-SoloSec runs four security scanners over a project and merges their output into
+Gavel runs four security scanners over a project and merges their output into
 one report with one exit code:
 
 | Tool | Finds |
@@ -37,22 +37,22 @@ Clone the repository and run the installer for your platform.
 On macOS or Linux:
 
 ```bash
-git clone https://github.com/maltemindedal/solosec.git
-cd solosec
+git clone https://github.com/maltemindedal/gavel.git
+cd gavel
 ./install.sh
 ```
 
 On Windows, in PowerShell:
 
 ```powershell
-git clone https://github.com/maltemindedal/solosec.git
-cd solosec
+git clone https://github.com/maltemindedal/gavel.git
+cd gavel
 .\install.ps1
 ```
 
 The installer checks for Docker, installs [uv](https://docs.astral.sh/uv/) if
 you don't have it, installs Trivy and Gitleaks if they are missing, then
-installs SoloSec itself as a uv tool. It also adds `~/.local/bin` to your `PATH`
+installs Gavel itself as a uv tool. It also adds `~/.local/bin` to your `PATH`
 if it isn't already there.
 
 If the installer says it added a directory to your `PATH`, restart your terminal
@@ -61,19 +61,19 @@ before continuing.
 ## Step 2 — Confirm the install
 
 ```bash
-solosec --help
+gavel --help
 ```
 
 You should see:
 
 ```
-usage: solosec [-h] [-u URL] [--project-root PROJECT_ROOT] [--config CONFIG]
+usage: gavel [-h] [-u URL] [--project-root PROJECT_ROOT] [--config CONFIG]
 
-Run the SoloSec security audit.
+Run the Gavel security audit.
 ```
 
 If the command is not found, see
-[Troubleshooting](guides/troubleshooting.md#the-solosec-command-is-not-found).
+[Troubleshooting](guides/troubleshooting.md#the-gavel-command-is-not-found).
 
 ## Step 3 — Run your first scan
 
@@ -81,10 +81,10 @@ Change into any project directory and run:
 
 ```bash
 cd /path/to/your/project
-solosec
+gavel
 ```
 
-SoloSec prints its progress as it works through the tools:
+Gavel prints its progress as it works through the tools:
 
 ```
 STARTING SECURITY AUDIT
@@ -108,7 +108,7 @@ The first Semgrep run downloads its rule set, so it is slower than later runs.
 
 ## Step 4 — Read the result
 
-SoloSec finishes with a summary table and a verdict:
+Gavel finishes with a summary table and a verdict:
 
 ```
 --------------------------------------------------
@@ -130,10 +130,10 @@ Two things to understand about this output:
 - **Only Critical and High cause a failure.** Medium, Low, and Info findings are
   counted and reported, but they do not change the verdict.
 - **The verdict sets the exit code.** `FAIL` exits `1`, `PASS` exits `0`. That is
-  what makes SoloSec usable as a CI gate.
+  what makes Gavel usable as a CI gate.
 
 Full details are in `security_audit.json` next to your project, and each tool's
-raw output is in `.security_reports/`. SoloSec adds `.security_reports/` to your
+raw output is in `.security_reports/`. Gavel adds `.security_reports/` to your
 `.gitignore` automatically so those files are not committed.
 
 ## Step 5 — Add a DAST scan (optional)
@@ -141,11 +141,11 @@ raw output is in `.security_reports/`. SoloSec adds `.security_reports/` to your
 To also scan a *running* application, start it, then pass its URL:
 
 ```bash
-solosec --url "http://localhost:3000"
+gavel --url "http://localhost:3000"
 ```
 
 This launches OWASP ZAP in a container, which is why Docker is a prerequisite.
-SoloSec rewrites `localhost` and `127.0.0.1` to `host.docker.internal` so the
+Gavel rewrites `localhost` and `127.0.0.1` to `host.docker.internal` so the
 container can reach an app running on your machine.
 
 A full ZAP scan takes considerably longer than the static tools — expect
@@ -154,6 +154,6 @@ minutes, not seconds.
 ## Where to go next
 
 - Exclude directories or turn tools off: [Configuring scans](guides/configuring-scans.md)
-- Run it in CI: [Using SoloSec in CI](guides/ci-github-actions.md)
+- Run it in CI: [Using Gavel in CI](guides/ci-github-actions.md)
 - Every flag and exit code: [CLI reference](reference/cli.md)
 - Understand the report structure: [Report format](reference/report-format.md)

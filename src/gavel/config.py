@@ -15,6 +15,8 @@ RawConfig = dict[str, RawConfigValue]
 
 KNOWN_TOOLS = ("trivy", "semgrep", "gitleaks", "zap")
 
+CONFIG_FILENAME = ".gavel.yaml"
+
 
 def _strip_comment(line: str) -> str:
     out: list[str] = []
@@ -162,7 +164,7 @@ def resolve_config(
     config_path: str | Path | None = None,
 ) -> ResolvedConfig:
     root = Path(project_root).resolve()
-    path = Path(config_path).resolve() if config_path is not None else root / ".solosec.yaml"
+    path = Path(config_path).resolve() if config_path is not None else root / CONFIG_FILENAME
 
     raw: RawConfig = {}
     if path.exists():
@@ -187,10 +189,10 @@ def _bash_escape(value: str) -> str:
 
 
 def _parse_args(argv: list[str] | None = None) -> tuple[CliOptions, OutputFormat]:
-    parser = argparse.ArgumentParser(prog="solosec-config")
+    parser = argparse.ArgumentParser(prog="gavel-config")
     parser.add_argument("project_root", help="Project root directory")
     parser.add_argument("--cli-url", default="", help="URL passed via CLI (overrides config)")
-    parser.add_argument("--config", default=None, help="Path to .solosec.yaml")
+    parser.add_argument("--config", default=None, help=f"Path to {CONFIG_FILENAME}")
     parser.add_argument("--format", choices=["json", "bash"], default="json")
     namespace = parser.parse_args(argv)
 
@@ -228,8 +230,8 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 0
 
-    print(f"SOLOSEC_URL={_bash_escape(resolved.url)}")
-    print(f"SOLOSEC_EXCLUDE_DIRS={_bash_escape(','.join(resolved.exclude_dirs))}")
+    print(f"GAVEL_URL={_bash_escape(resolved.url)}")
+    print(f"GAVEL_EXCLUDE_DIRS={_bash_escape(','.join(resolved.exclude_dirs))}")
     for tool_name, enabled in resolved.tools.as_dict().items():
-        print(f"SOLOSEC_TOOL_{tool_name.upper()}={'1' if enabled else '0'}")
+        print(f"GAVEL_TOOL_{tool_name.upper()}={'1' if enabled else '0'}")
     return 0

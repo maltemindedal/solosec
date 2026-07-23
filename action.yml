@@ -1,5 +1,5 @@
-name: SoloSec Security Scan
-description: Run SoloSec (Trivy + Semgrep + Gitleaks + optional ZAP).
+name: Gavel Security Scan
+description: Run Gavel (Trivy + Semgrep + Gitleaks + optional ZAP).
 
 inputs:
   url:
@@ -10,16 +10,16 @@ inputs:
     default: "true"
   artifact-name:
     description: "Artifact name"
-    default: "solosec-report"
+    default: "gavel-report"
 
 runs:
   using: composite
   steps:
-    - name: Build SoloSec
+    - name: Build Gavel
       shell: bash
-      run: docker build -t solosec:action "${GITHUB_ACTION_PATH}"
+      run: docker build -t gavel:action "${GITHUB_ACTION_PATH}"
 
-    - name: Run SoloSec
+    - name: Run Gavel
       shell: bash
       env:
         INPUT_URL: ${{ inputs.url }}
@@ -41,7 +41,7 @@ runs:
           -v "${GITHUB_WORKSPACE}:/src" \
           -v /var/run/docker.sock:/var/run/docker.sock \
           -e GITHUB_WORKSPACE="${GITHUB_WORKSPACE}" \
-          solosec:action "${ARGS[@]}"
+          gavel:action "${ARGS[@]}"
 
     - name: Upload reports
       if: ${{ always() && inputs.upload-artifact == 'true' }}

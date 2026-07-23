@@ -172,9 +172,9 @@ def rewrite_zap_target(url: str) -> str:
 
 def resolve_host_report_dir(report_dir: str | Path) -> Path:
     report_path = Path(report_dir).resolve()
-    if host_report_dir := os.environ.get("SOLOSEC_HOST_REPORT_DIR"):
+    if host_report_dir := os.environ.get("GAVEL_HOST_REPORT_DIR"):
         return Path(host_report_dir)
-    if host_workspace := os.environ.get("SOLOSEC_HOST_WORKSPACE"):
+    if host_workspace := os.environ.get("GAVEL_HOST_WORKSPACE"):
         return Path(host_workspace) / ".security_reports"
     if github_workspace := os.environ.get("GITHUB_WORKSPACE"):
         return Path(github_workspace) / ".security_reports"

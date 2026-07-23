@@ -1,23 +1,23 @@
 # CLI reference
 
-SoloSec installs three console scripts. `solosec` is the one you normally run;
+Gavel installs three console scripts. `gavel` is the one you normally run;
 the other two expose internal stages for scripting and debugging.
 
 | Command | Purpose |
 | --- | --- |
-| [`solosec`](#solosec) | Run the full audit: scanners, then aggregation. |
-| [`solosec-config`](#solosec-config) | Resolve `.solosec.yaml` and print the effective configuration. |
-| [`solosec-aggregate`](#solosec-aggregate) | Merge existing tool reports into `security_audit.json`. |
+| [`gavel`](#gavel) | Run the full audit: scanners, then aggregation. |
+| [`gavel-config`](#gavel-config) | Resolve `.gavel.yaml` and print the effective configuration. |
+| [`gavel-aggregate`](#gavel-aggregate) | Merge existing tool reports into `security_audit.json`. |
 
 ---
 
-## `solosec`
+## `gavel`
 
 Runs the enabled scanners over a project, writes `security_audit.json`, and
 exits non-zero if any Critical or High finding is present.
 
 ```
-usage: solosec [-h] [-u URL] [--project-root PROJECT_ROOT] [--config CONFIG]
+usage: gavel [-h] [-u URL] [--project-root PROJECT_ROOT] [--config CONFIG]
 ```
 
 ### Options
@@ -26,7 +26,7 @@ usage: solosec [-h] [-u URL] [--project-root PROJECT_ROOT] [--config CONFIG]
 | --- | --- | --- |
 | `-u`, `--url`, `-Url`, `--Url` | `""` | DAST target URL. Enables the ZAP stage. Overrides `target_url` from the config file. |
 | `--project-root` | `.` | Directory to scan. Resolved to an absolute path; the report is written here. |
-| `--config` | `<project-root>/.solosec.yaml` | Path to an alternate config file. |
+| `--config` | `<project-root>/.gavel.yaml` | Path to an alternate config file. |
 | `-h`, `--help` | — | Print usage and exit. |
 
 The `-Url` and `--Url` spellings exist so the same invocation works in
@@ -62,7 +62,7 @@ See [Troubleshooting](../guides/troubleshooting.md#a-tool-was-skipped-or-warned-
 
 ### Per-tool exit-code handling
 
-Each scanner has its own notion of a clean run. SoloSec treats these codes as
+Each scanner has its own notion of a clean run. Gavel treats these codes as
 success and anything else as a warning:
 
 | Tool | Accepted exit codes | Notes |
@@ -77,13 +77,13 @@ of exit code.
 
 ---
 
-## `solosec-config`
+## `gavel-config`
 
 Resolves the configuration for a project and prints it. Useful for confirming
-what SoloSec will actually do before running a scan.
+what Gavel will actually do before running a scan.
 
 ```
-usage: solosec-config [-h] [--cli-url CLI_URL] [--config CONFIG]
+usage: gavel-config [-h] [--cli-url CLI_URL] [--config CONFIG]
                       [--format {json,bash}]
                       project_root
 ```
@@ -92,7 +92,7 @@ usage: solosec-config [-h] [--cli-url CLI_URL] [--config CONFIG]
 | --- | --- | --- |
 | `project_root` | required | Directory whose config to resolve. |
 | `--cli-url` | `""` | Simulate a `--url` flag, to check precedence. |
-| `--config` | `<project_root>/.solosec.yaml` | Alternate config path. |
+| `--config` | `<project_root>/.gavel.yaml` | Alternate config path. |
 | `--format` | `json` | `json` for a single object, `bash` for shell-assignable variables. |
 
 Exits `0`.
@@ -100,32 +100,32 @@ Exits `0`.
 ### Examples
 
 ```console
-$ solosec-config .
+$ gavel-config .
 {"url": "", "exclude_dirs": [], "tools": {"trivy": true, "semgrep": true, "gitleaks": true, "zap": true}}
 ```
 
 ```console
-$ solosec-config . --format bash
-SOLOSEC_URL=''
-SOLOSEC_EXCLUDE_DIRS=''
-SOLOSEC_TOOL_TRIVY=1
-SOLOSEC_TOOL_SEMGREP=1
-SOLOSEC_TOOL_GITLEAKS=1
-SOLOSEC_TOOL_ZAP=1
+$ gavel-config . --format bash
+GAVEL_URL=''
+GAVEL_EXCLUDE_DIRS=''
+GAVEL_TOOL_TRIVY=1
+GAVEL_TOOL_SEMGREP=1
+GAVEL_TOOL_GITLEAKS=1
+GAVEL_TOOL_ZAP=1
 ```
 
 In `bash` format, values are single-quote escaped, `exclude_dirs` is joined with
-commas, and each tool becomes `SOLOSEC_TOOL_<NAME>` set to `1` or `0`.
+commas, and each tool becomes `GAVEL_TOOL_<NAME>` set to `1` or `0`.
 
 ---
 
-## `solosec-aggregate`
+## `gavel-aggregate`
 
 Merges scanner JSON reports that already exist into a single report. This is the
-second half of `solosec`, exposed separately — it runs no scanners.
+second half of `gavel`, exposed separately — it runs no scanners.
 
 ```
-usage: solosec-aggregate [-h] report_dir output_file
+usage: gavel-aggregate [-h] report_dir output_file
 ```
 
 | Argument | Effect |
@@ -133,13 +133,13 @@ usage: solosec-aggregate [-h] report_dir output_file
 | `report_dir` | Directory holding `trivy.json`, `semgrep.json`, `gitleaks.json`, and/or `zap.json`. Missing files are skipped. |
 | `output_file` | Path to write the aggregated report. Parent directories are created. |
 
-Exit codes match `solosec`: `1` if any Critical or High finding is present,
+Exit codes match `gavel`: `1` if any Critical or High finding is present,
 otherwise `0`.
 
 ### Example
 
 ```console
-$ solosec-aggregate .security_reports security_audit.json
+$ gavel-aggregate .security_reports security_audit.json
 --- Aggregating Reports from /path/to/.security_reports ---
 Generated security_audit.json with 4 issues.
 ```

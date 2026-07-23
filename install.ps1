@@ -1,5 +1,5 @@
 # install.ps1 - Setup script
-Write-Host "Installing SoloSec..." -ForegroundColor Cyan
+Write-Host "Installing Gavel..." -ForegroundColor Cyan
 
 $UvBinPath = Join-Path $HOME ".local\bin"
 
@@ -38,7 +38,7 @@ if (!(Get-Command gitleaks -ErrorAction SilentlyContinue)) {
     }
 }
 
-Write-Host "[*] Installing SoloSec with uv..."
+Write-Host "[*] Installing Gavel with uv..."
 uv python install 3.11
 uv tool install --force --python 3.11 -e $PSScriptRoot
 
@@ -46,7 +46,7 @@ $CurrentPath = [Environment]::GetEnvironmentVariable("Path", "User")
 if ($CurrentPath -notlike "*$UvBinPath*") {
     Write-Host "[*] Adding '$UvBinPath' to your User PATH..."
     [Environment]::SetEnvironmentVariable("Path", "$CurrentPath;$UvBinPath", "User")
-    Write-Host "Added. Restart your terminal to use the command 'solosec'." -ForegroundColor Green
+    Write-Host "Added. Restart your terminal to use the command 'gavel'." -ForegroundColor Green
 } else {
     Write-Host "uv tool bin directory is already on your PATH." -ForegroundColor Green
 }
